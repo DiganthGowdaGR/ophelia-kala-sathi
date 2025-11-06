@@ -60,11 +60,11 @@ export default function SignUpPage() {
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100">
         <Navigation />
         <div className="flex items-center justify-center py-20 px-4">
-          <div className="max-w-md w-full bg-white rounded-2xl shadow-2xl p-8 border border-purple-100">
+          <div className="max-w-md w-full bg-white rounded-2xl shadow-2xl p-8 border border-blue-100">
             <div className="text-center">
               <div className="mb-4 flex justify-center">
                 <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-full blur-lg opacity-75"></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-full blur-lg opacity-75"></div>
                   <CheckCircle className="w-16 h-16 text-white relative" />
                 </div>
               </div>
@@ -95,9 +95,9 @@ export default function SignUpPage() {
       <Navigation />
       
       <div className="flex items-center justify-center py-20 px-4">
-        <div className="max-w-md w-full bg-white rounded-2xl shadow-2xl p-8 border border-purple-100">
+        <div className="max-w-md w-full bg-white rounded-2xl shadow-2xl p-8 border border-blue-100">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent mb-2">Create Account</h1>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent mb-2">Create Account</h1>
             <p className="text-gray-600">Join Ophelia AI marketplace today</p>
           </div>
 
@@ -119,24 +119,24 @@ export default function SignUpPage() {
                   onClick={() => setRole('customer')}
                   className={`p-4 rounded-xl border-2 transition ${
                     role === 'customer'
-                      ? 'border-purple-600 bg-purple-50'
-                      : 'border-gray-200 hover:border-purple-300'
+                      ? 'border-blue-600 bg-blue-50'
+                      : 'border-gray-200 hover:border-blue-300'
                   }`}
                 >
-                  <User className={`w-6 h-6 mx-auto mb-2 ${role === 'customer' ? 'text-purple-600' : 'text-gray-400'}`} />
-                  <div className={`font-semibold text-sm ${role === 'customer' ? 'text-purple-600' : 'text-gray-600'}`}>Customer</div>
+                  <User className={`w-6 h-6 mx-auto mb-2 ${role === 'customer' ? 'text-blue-600' : 'text-gray-400'}`} />
+                  <div className={`font-semibold text-sm ${role === 'customer' ? 'text-blue-600' : 'text-gray-600'}`}>Customer</div>
                 </button>
                 <button
                   type="button"
                   onClick={() => setRole('artisan')}
                   className={`p-4 rounded-xl border-2 transition ${
                     role === 'artisan'
-                      ? 'border-indigo-600 bg-indigo-50'
-                      : 'border-gray-200 hover:border-indigo-300'
+                      ? 'border-cyan-600 bg-cyan-50'
+                      : 'border-gray-200 hover:border-cyan-300'
                   }`}
                 >
-                  <User className={`w-6 h-6 mx-auto mb-2 ${role === 'artisan' ? 'text-indigo-600' : 'text-gray-400'}`} />
-                  <div className={`font-semibold text-sm ${role === 'artisan' ? 'text-indigo-600' : 'text-gray-600'}`}>Artisan</div>
+                  <User className={`w-6 h-6 mx-auto mb-2 ${role === 'artisan' ? 'text-cyan-600' : 'text-gray-400'}`} />
+                  <div className={`font-semibold text-sm ${role === 'artisan' ? 'text-cyan-600' : 'text-gray-600'}`}>Artisan</div>
                 </button>
               </div>
             </div>
@@ -151,7 +151,7 @@ export default function SignUpPage() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-600 focus:border-transparent transition"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-transparent transition"
                   placeholder="you@example.com"
                   required
                 />
@@ -168,7 +168,7 @@ export default function SignUpPage() {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-600 focus:border-transparent transition"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-transparent transition"
                   placeholder="At least 6 characters"
                   required
                 />
@@ -185,7 +185,7 @@ export default function SignUpPage() {
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-600 focus:border-transparent transition"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-transparent transition"
                   placeholder="Repeat your password"
                   required
                 />
@@ -195,7 +195,7 @@ export default function SignUpPage() {
             <button
               type="submit"
               disabled={loading || googleLoading}
-              className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 rounded-xl font-semibold hover:from-purple-700 hover:to-indigo-700 transition disabled:opacity-50 shadow-lg"
+              className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-cyan-700 transition disabled:opacity-50 shadow-lg"
             >
               {loading ? 'Creating account...' : 'Create Account'}
             </button>
@@ -215,7 +215,7 @@ export default function SignUpPage() {
               type="button"
               disabled={loading || googleLoading}
               onClick={handleGoogleSignUp}
-              className="w-full flex items-center justify-center space-x-2 border-2 border-gray-300 text-gray-700 py-3 rounded-xl font-semibold hover:border-purple-600 hover:text-purple-600 transition disabled:opacity-50"
+              className="w-full flex items-center justify-center space-x-2 border-2 border-gray-300 text-gray-700 py-3 rounded-xl font-semibold hover:border-blue-600 hover:text-blue-600 transition disabled:opacity-50"
             >
               <Chrome className="w-5 h-5" />
               <span>{googleLoading ? 'Creating account...' : 'Sign up with Google'}</span>
@@ -225,7 +225,7 @@ export default function SignUpPage() {
           <div className="mt-6 text-center">
             <p className="text-gray-600">
               Already have an account?{' '}
-              <Link to="/login" className="font-semibold text-purple-600 hover:text-indigo-600 transition">
+              <Link to="/login" className="font-semibold text-blue-600 hover:text-blue-700 transition">
                 Sign in
               </Link>
             </p>
