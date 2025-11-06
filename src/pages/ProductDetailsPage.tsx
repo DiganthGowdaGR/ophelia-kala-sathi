@@ -29,7 +29,6 @@ export default function ProductDetailsPage() {
   const [artisanProfileData, setArtisanProfileData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
-  const [activeTab, setActiveTab] = useState<'details' | 'reviews' | 'qa'>('details');
   const [isInWishlist, setIsInWishlist] = useState(false);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [newReview, setNewReview] = useState({ rating: 5, title: '', review_text: '' });
@@ -260,7 +259,6 @@ export default function ProductDetailsPage() {
       <Navigation />
       
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-16">
-        {/* Back Button */}
         <button
           onClick={() => navigate('/marketplace')}
           className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition"
@@ -401,7 +399,6 @@ export default function ProductDetailsPage() {
               </div>
             )}
 
-            {/* Shipping Info */}
             <div className="p-4 border border-gray-200 rounded-lg">
               <div className="flex items-center gap-2 text-gray-900">
                 <Truck className="w-5 h-5" />
@@ -414,226 +411,173 @@ export default function ProductDetailsPage() {
           </div>
         </div>
 
-        {/* Tabs Section */}
+        {/* Description Section */}
+        <div className="border border-gray-200 rounded-lg overflow-hidden mb-8 p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Description</h3>
+          <p className="text-gray-600 leading-relaxed whitespace-pre-line">
+            {product.description || 'No description available.'}
+          </p>
+
+          {product.materials && (
+            <div className="mt-6">
+              <h4 className="font-semibold text-gray-900 mb-2">Materials</h4>
+              <p className="text-gray-600">{product.materials}</p>
+            </div>
+          )}
+
+          {product.dimensions && (
+            <div className="mt-4">
+              <h4 className="font-semibold text-gray-900 mb-2">Dimensions</h4>
+              <p className="text-gray-600">{product.dimensions}</p>
+            </div>
+          )}
+        </div>
+
+        {/* Reviews Section */}
         <div className="border border-gray-200 rounded-lg overflow-hidden mb-8">
-          {/* Tab Headers */}
-          <div className="flex border-b border-gray-200">
-            <button
-              onClick={() => setActiveTab('details')}
-              className={`flex-1 px-6 py-4 font-semibold transition ${
-                activeTab === 'details'
-                  ? 'text-blue-600 border-b-2 border-blue-600'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              Product Details
-            </button>
-            <button
-              onClick={() => setActiveTab('reviews')}
-              className={`flex-1 px-6 py-4 font-semibold transition flex items-center justify-center gap-2 ${
-                activeTab === 'reviews'
-                  ? 'text-blue-600 border-b-2 border-blue-600'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              <Star className="w-5 h-5" />
-              Reviews ({reviewCount})
-            </button>
-            <button
-              onClick={() => setActiveTab('qa')}
-              className={`flex-1 px-6 py-4 font-semibold transition flex items-center justify-center gap-2 ${
-                activeTab === 'qa'
-                  ? 'text-blue-600 border-b-2 border-blue-600'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              <MessageCircle className="w-5 h-5" />
-              Q&A
-            </button>
-          </div>
-
-          {/* Tab Content */}
           <div className="p-6">
-            {activeTab === 'details' && (
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Description</h3>
-                <p className="text-gray-600 leading-relaxed whitespace-pre-line">
-                  {product.description || 'No description available.'}
-                </p>
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-semibold text-gray-900">Customer Reviews</h3>
+              <button
+                onClick={() => setShowReviewForm(!showReviewForm)}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+              >
+                Write a Review
+              </button>
+            </div>
 
-                {product.materials && (
-                  <div className="mt-6">
-                    <h4 className="font-semibold text-gray-900 mb-2">Materials</h4>
-                    <p className="text-gray-600">{product.materials}</p>
-                  </div>
-                )}
-
-                {product.dimensions && (
-                  <div className="mt-4">
-                    <h4 className="font-semibold text-gray-900 mb-2">Dimensions</h4>
-                    <p className="text-gray-600">{product.dimensions}</p>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {activeTab === 'reviews' && (
-              <div>
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-semibold text-gray-900">Customer Reviews</h3>
-                  <button
-                    onClick={() => setShowReviewForm(!showReviewForm)}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-                  >
-                    Write a Review
-                  </button>
-                </div>
-
-                {/* Review Form */}
-                {showReviewForm && (
-                  <div className="mb-6 p-6 border border-gray-200 rounded-lg">
-                    <h4 className="font-semibold text-gray-900 mb-4">Write Your Review</h4>
-                    
-                    <div className="mb-4">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Rating</label>
-                      <div className="flex gap-2">
-                        {[1, 2, 3, 4, 5].map((rating) => (
-                          <button
-                            key={rating}
-                            onClick={() => setNewReview({ ...newReview, rating })}
-                            className="transition"
-                          >
-                            <Star
-                              className={`w-8 h-8 ${
-                                rating <= newReview.rating
-                                  ? 'text-yellow-400 fill-current'
-                                  : 'text-gray-300'
-                              }`}
-                            />
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="mb-4">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
-                      <input
-                        type="text"
-                        value={newReview.title}
-                        onChange={(e) => setNewReview({ ...newReview, title: e.target.value })}
-                        placeholder="Sum up your experience"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
-                    </div>
-
-                    <div className="mb-4">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Review</label>
-                      <textarea
-                        value={newReview.review_text}
-                        onChange={(e) => setNewReview({ ...newReview, review_text: e.target.value })}
-                        placeholder="Share your thoughts about this product"
-                        rows={4}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
-                    </div>
-
-                    <div className="flex gap-3">
+            {/* Review Form */}
+            {showReviewForm && (
+              <div className="mb-6 p-6 border border-gray-200 rounded-lg">
+                <h4 className="font-semibold text-gray-900 mb-4">Write Your Review</h4>
+                
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Rating</label>
+                  <div className="flex gap-2">
+                    {[1, 2, 3, 4, 5].map((rating) => (
                       <button
-                        onClick={submitReview}
-                        className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center gap-2"
+                        key={rating}
+                        onClick={() => setNewReview({ ...newReview, rating })}
+                        className="transition"
                       >
-                        <Send className="w-4 h-4" />
-                        Submit Review
+                        <Star
+                          className={`w-8 h-8 ${
+                            rating <= newReview.rating
+                              ? 'text-yellow-400 fill-current'
+                              : 'text-gray-300'
+                          }`}
+                        />
                       </button>
-                      <button
-                        onClick={() => setShowReviewForm(false)}
-                        className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {/* Reviews List */}
-                {reviews.length === 0 ? (
-                  <div className="text-center py-12 text-gray-500">
-                    <Star className="w-12 h-12 mx-auto mb-3" />
-                    <p>No reviews yet. Be the first to review this product!</p>
-                  </div>
-                ) : (
-                  <div className="space-y-6">
-                    {reviews.map((review) => (
-                      <div key={review.id} className="pb-6 border-b border-gray-200 last:border-0">
-                        <div className="flex items-start justify-between mb-2">
-                          <div>
-                            <div className="flex items-center gap-2 mb-1">
-                              <div className="flex items-center gap-1">
-                                {[...Array(5)].map((_, i) => (
-                                  <Star
-                                    key={i}
-                                    className={`w-4 h-4 ${
-                                      i < review.rating
-                                        ? 'text-yellow-400 fill-current'
-                                        : 'text-gray-300'
-                                    }`}
-                                  />
-                                ))}
-                              </div>
-                              {review.verified_purchase && (
-                                <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
-                                  Verified Purchase
-                                </span>
-                              )}
-                            </div>
-                            {review.title && (
-                              <h5 className="font-semibold text-gray-900">{review.title}</h5>
-                            )}
-                          </div>
-                          <span className="text-sm text-gray-500">
-                            {new Date(review.created_at).toLocaleDateString()}
-                          </span>
-                        </div>
-                        
-                        {review.review_text && (
-                          <p className="text-gray-600 mb-3">{review.review_text}</p>
-                        )}
-
-                        <div className="flex items-center gap-4">
-                          <button className="flex items-center gap-1 text-sm text-gray-500 hover:text-blue-600 transition">
-                            <ThumbsUp className="w-4 h-4" />
-                            <span>Helpful ({review.helpful_count})</span>
-                          </button>
-                        </div>
-                      </div>
                     ))}
                   </div>
-                )}
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
+                  <input
+                    type="text"
+                    value={newReview.title}
+                    onChange={(e) => setNewReview({ ...newReview, title: e.target.value })}
+                    placeholder="Sum up your experience"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Review</label>
+                  <textarea
+                    value={newReview.review_text}
+                    onChange={(e) => setNewReview({ ...newReview, review_text: e.target.value })}
+                    placeholder="Share your thoughts about this product"
+                    rows={4}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={submitReview}
+                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center gap-2"
+                  >
+                    <Send className="w-4 h-4" />
+                    Submit Review
+                  </button>
+                  <button
+                    onClick={() => setShowReviewForm(false)}
+                    className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
+                  >
+                    Cancel
+                  </button>
+                </div>
               </div>
             )}
 
-            {activeTab === 'qa' && (
-              <div>
-                <div className="text-center py-12 text-gray-500">
-                  <MessageCircle className="w-12 h-12 mx-auto mb-3" />
-                  <p className="mb-4">Have a question about this product?</p>
-                  <button className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-                    Ask a Question
-                  </button>
-                </div>
+            {/* Reviews List */}
+            {reviews.length === 0 ? (
+              <div className="text-center py-12 text-gray-500">
+                <Star className="w-12 h-12 mx-auto mb-3" />
+                <p>No reviews yet. Be the first to review this product!</p>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {reviews.map((review) => (
+                  <div key={review.id} className="pb-6 border-b border-gray-200 last:border-0">
+                    <div className="flex items-start justify-between mb-2">
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <div className="flex items-center gap-1">
+                            {[...Array(5)].map((_, i) => (
+                              <Star
+                                key={i}
+                                className={`w-4 h-4 ${
+                                  i < review.rating
+                                    ? 'text-yellow-400 fill-current'
+                                    : 'text-gray-300'
+                                }`}
+                              />
+                            ))}
+                          </div>
+                          {review.verified_purchase && (
+                            <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
+                              Verified Purchase
+                            </span>
+                          )}
+                        </div>
+                        {review.title && (
+                          <h5 className="font-semibold text-gray-900">{review.title}</h5>
+                        )}
+                      </div>
+                      <span className="text-sm text-gray-500">
+                        {new Date(review.created_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                    
+                    {review.review_text && (
+                      <p className="text-gray-600 mb-3">{review.review_text}</p>
+                    )}
+
+                    <div className="flex items-center gap-4">
+                      <button className="flex items-center gap-1 text-sm text-gray-500 hover:text-blue-600 transition">
+                        <ThumbsUp className="w-4 h-4" />
+                        <span>Helpful ({review.helpful_count})</span>
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </div>
         </div>
 
-        {/* Artisan Profile Section */}
+        {/* Artisan Profile Section - Two Column Layout */}
         {artisanProfile && (
           <div className="border border-gray-200 rounded-lg overflow-hidden mb-8">
-            <div className="bg-gray-50 px-6 sm:px-8 py-6">
-              <div className="flex flex-col sm:flex-row gap-6">
-                {/* Artisan Avatar */}
-                <div className="flex-shrink-0">
-                  <div className="relative">
+            <div className="grid md:grid-cols-2 gap-0">
+              {/* Left Column: Artisan Info */}
+              <div className="bg-gray-50 px-6 sm:px-8 py-6 border-r border-gray-200">
+                <div className="flex flex-col items-center mb-6">
+                  {/* Artisan Avatar */}
+                  <div className="relative mb-4">
                     {artisanProfileData?.avatar_url ? (
                       <img
                         src={artisanProfileData.avatar_url}
@@ -651,99 +595,111 @@ export default function ProductDetailsPage() {
                       </div>
                     )}
                   </div>
+
+                  <h2 className="text-xl font-bold text-gray-900 text-center mb-2">
+                    {artisanProfile.business_name || artisanProfileData?.full_name || 'Artisan Shop'}
+                  </h2>
+                  
+                  <span className="text-xs font-semibold px-3 py-1 bg-blue-100 text-blue-700 rounded-full mb-4">
+                    {artisanProfile.verification_status === 'verified' ? '✓ Verified Artisan' : 'Pending Verification'}
+                  </span>
+
+                  {/* Artisan Rating */}
+                  <div className="text-center mb-6">
+                    <div className="flex items-center gap-1 justify-center mb-2">
+                      {[...Array(5)].map((_, i) => (
+                        <Star
+                          key={i}
+                          className={`w-5 h-5 ${
+                            i < Math.round(averageRating)
+                              ? 'text-yellow-400 fill-current'
+                              : 'text-gray-300'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <p className="text-sm text-gray-600">
+                      {averageRating.toFixed(1)} rating • {reviewCount} reviews
+                    </p>
+                  </div>
                 </div>
 
-                {/* Artisan Info */}
-                <div className="flex-grow">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-                    <div>
-                      <h2 className="text-xl font-bold text-gray-900">
-                        {artisanProfile.business_name || artisanProfileData?.full_name || 'Artisan Shop'}
-                      </h2>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="text-xs font-semibold px-3 py-1 bg-blue-100 text-blue-700 rounded-full">
-                          {artisanProfile.verification_status === 'verified' ? '✓ Verified Artisan' : 'Pending Verification'}
-                        </span>
+                {/* Bio */}
+                {artisanProfile.bio && (
+                  <p className="text-gray-600 mb-6 leading-relaxed text-center">
+                    {artisanProfile.bio}
+                  </p>
+                )}
+
+                {/* Location and Contact */}
+                <div className="space-y-4 mb-6">
+                  {artisanProfile.location && (
+                    <div className="flex items-center gap-2 justify-center">
+                      <MapPin className="w-4 h-4 text-blue-600" />
+                      <div>
+                        <p className="text-xs text-gray-500 font-medium">Location</p>
+                        <p className="text-sm text-gray-900 font-medium">{artisanProfile.location}</p>
                       </div>
                     </div>
-
-                    {/* Artisan Rating */}
-                    <div className="text-center sm:text-right">
-                      <div className="flex items-center gap-2 justify-center sm:justify-end mb-2">
-                        {[...Array(5)].map((_, i) => (
-                          <Star
-                            key={i}
-                            className={`w-5 h-5 ${
-                              i < Math.round(averageRating)
-                                ? 'text-yellow-400 fill-current'
-                                : 'text-gray-300'
-                            }`}
-                          />
-                        ))}
-                      </div>
-                      <p className="text-sm text-gray-600">
-                        {averageRating.toFixed(1)} rating • {reviewCount} reviews
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Bio/Story */}
-                  {artisanProfile.bio && (
-                    <p className="text-gray-600 mb-4 leading-relaxed">
-                      {artisanProfile.bio}
-                    </p>
                   )}
 
-                  {/* Location and Contact */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {artisanProfile.location && (
-                      <div className="flex items-center gap-2">
-                        <MapPin className="w-4 h-4 text-blue-600" />
-                        <div>
-                          <p className="text-xs text-gray-500 font-medium">Location</p>
-                          <p className="text-sm text-gray-900 font-medium">{artisanProfile.location}</p>
-                        </div>
+                  {artisanProfileData?.email && (
+                    <div className="flex items-center gap-2 justify-center">
+                      <Mail className="w-4 h-4 text-blue-600" />
+                      <div>
+                        <p className="text-xs text-gray-500 font-medium">Contact</p>
+                        <p className="text-sm text-gray-900 font-medium break-all">{artisanProfileData.email}</p>
                       </div>
-                    )}
+                    </div>
+                  )}
+                </div>
 
-                    {artisanProfileData?.email && (
-                      <div className="flex items-center gap-2">
-                        <Mail className="w-4 h-4 text-blue-600" />
-                        <div>
-                          <p className="text-xs text-gray-500 font-medium">Contact</p>
-                          <p className="text-sm text-gray-900 font-medium break-all">{artisanProfileData.email}</p>
-                        </div>
-                      </div>
-                    )}
+                {/* Skills */}
+                {artisanProfile.skills && artisanProfile.skills.length > 0 && (
+                  <div className="mb-6 pb-6 border-b border-gray-200">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Award className="w-5 h-5 text-blue-600" />
+                      <h3 className="font-semibold text-gray-900">Experience & Skills</h3>
+                    </div>
+                    <div className="flex flex-wrap gap-2 justify-center">
+                      {artisanProfile.skills.map((skill, idx) => (
+                        <span key={idx} className="px-3 py-1 bg-white text-blue-600 rounded-full text-sm font-medium border border-blue-200">
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
                   </div>
+                )}
+
+                {/* Action Buttons */}
+                <div className="flex flex-col gap-3">
+                  <button className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition">
+                    View All Products
+                  </button>
+                  <button className="w-full px-6 py-3 bg-white text-blue-600 rounded-lg font-semibold border-2 border-blue-600 hover:bg-blue-50 transition">
+                    Contact Artisan
+                  </button>
                 </div>
               </div>
 
-              {/* Skills/Experience */}
-              {artisanProfile.skills && artisanProfile.skills.length > 0 && (
-                <div className="mt-6 pt-6 border-t border-gray-200">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Award className="w-5 h-5 text-blue-600" />
-                    <h3 className="font-semibold text-gray-900">Experience & Skills</h3>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {artisanProfile.skills.map((skill, idx) => (
-                      <span key={idx} className="px-3 py-1 bg-white text-blue-600 rounded-full text-sm font-medium border border-blue-200">
-                        {skill}
-                      </span>
-                    ))}
-                  </div>
+              {/* Right Column: Story Behind */}
+              <div className="px-6 sm:px-8 py-6 flex flex-col justify-center">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Story Behind This Product</h3>
+                <div className="prose prose-sm max-w-none text-gray-600 leading-relaxed">
+                  <p>
+                    Each piece crafted by {artisanProfile.business_name || 'this artisan'} tells a unique story of dedication, 
+                    creativity, and passion. From the careful selection of materials to the meticulous handcrafting process, 
+                    every detail is thoughtfully created to bring beauty and function into your home.
+                  </p>
+                  <p className="mt-4">
+                    This particular product represents {artisanProfile.business_name || 'the artisan'}'s commitment to quality 
+                    and authentic craftsmanship. By purchasing from verified artisans, you're not just acquiring a beautiful item—
+                    you're supporting local craftspeople and preserving traditional art forms for future generations.
+                  </p>
+                  <p className="mt-4">
+                    Discover the artisan's full collection and explore the rich heritage behind each handcrafted creation.
+                  </p>
                 </div>
-              )}
-
-              {/* Action Buttons */}
-              <div className="mt-6 pt-6 border-t border-gray-200 flex flex-col sm:flex-row gap-3">
-                <button className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition">
-                  View All Products
-                </button>
-                <button className="flex-1 px-6 py-3 bg-white text-blue-600 rounded-lg font-semibold border-2 border-blue-600 hover:bg-blue-50 transition">
-                  Contact Artisan
-                </button>
               </div>
             </div>
           </div>

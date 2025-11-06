@@ -2,17 +2,16 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import Navigation from '@/components/shared/Navigation';
-import { Mail, Lock, Chrome, CheckCircle, Send } from 'lucide-react';
+import { Mail, Lock, CheckCircle, Send } from 'lucide-react';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
   const [showEmailNotification, setShowEmailNotification] = useState(false);
   const [notificationEmail, setNotificationEmail] = useState('');
-  const { signIn, signInWithGoogle } = useAuth();
+  const { signIn } = useAuth();
   const navigate = useNavigate();
 
   async function handleSubmit(e: React.FormEvent) {
@@ -32,17 +31,7 @@ export default function LoginPage() {
     }
   }
 
-  async function handleGoogleSignIn() {
-    setError('');
-    setGoogleLoading(true);
 
-    try {
-      await signInWithGoogle();
-    } catch (err: any) {
-      setError(err.message || 'Failed to sign in with Google');
-      setGoogleLoading(false);
-    }
-  }
 
   if (showEmailNotification) {
     return (
@@ -137,33 +126,14 @@ export default function LoginPage() {
 
             <button
               type="submit"
-              disabled={loading || googleLoading}
+              disabled={loading}
               className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-cyan-700 transition disabled:opacity-50 shadow-lg"
             >
               {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
 
-          <div className="mt-6">
-            <div className="relative mb-6">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300"></div>
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-600">Or continue with</span>
-              </div>
-            </div>
 
-            <button
-              type="button"
-              disabled={loading || googleLoading}
-              onClick={handleGoogleSignIn}
-              className="w-full flex items-center justify-center space-x-2 border-2 border-gray-300 text-gray-700 py-3 rounded-xl font-semibold hover:border-blue-600 hover:text-blue-600 transition disabled:opacity-50"
-            >
-              <Chrome className="w-5 h-5" />
-              <span>{googleLoading ? 'Signing in...' : 'Sign in with Google'}</span>
-            </button>
-          </div>
 
           <div className="mt-6 text-center">
             <p className="text-gray-600">
