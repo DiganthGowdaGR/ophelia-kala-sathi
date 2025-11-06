@@ -175,31 +175,22 @@ export default function EnhancedAIChatbot({ assistantType, onNewMessage }: Enhan
     setLoading(true);
 
     try {
-      const lc = userMessage.toLowerCase();
-
-      // If message matches any prebuilt keyword, immediately return the prebuilt message
-      for (const entry of PREBUILT_MESSAGES) {
-        for (const kw of entry.keywords) {
-          if (lc.includes(kw)) {
-            setMessages(prev => [...prev, {
-              role: 'assistant',
-              content: entry.message,
-              timestamp: new Date()
-            }]);
-            if (onNewMessage) onNewMessage();
-            return;
-          }
-        }
-      }
-
-      // If no prebuilt match, return rate limit reached (per user's request)
+      const response = await generateChatResponse(userMessage, messages);
+      
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: 'Rate limit reached. Please try again later.',
+        content: response,
         timestamp: new Date()
       }]);
-
+      
       if (onNewMessage) onNewMessage();
+    } catch (error) {
+      console.error('Error sending message:', error);
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: 'Sorry, I encountered an error processing your message. Please try again.',
+        timestamp: new Date()
+      }]);
     } finally {
       setLoading(false);
     }
