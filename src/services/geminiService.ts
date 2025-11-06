@@ -598,15 +598,32 @@ Consider sales velocity, seasonality, and safety stock.`;
 }
 
 // Generate AI image using Gemini
-export async function generateImage(prompt: string): Promise<string> {
-  const imagePrompt = `Generate a professional product image based on this description: ${prompt}. 
-Respond with ONLY a realistic, high-quality image generation prompt suitable for Imagen 3.0.`;
-  
+export async function generateImage(prompt: string, imageType: string = 'product_poster', style: string = 'realistic'): Promise<string> {
   try {
-    const description = await callGeminiAPIWithRetry(imagePrompt);
-    return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400'%3E%3Crect fill='%23f0f0f0' width='400' height='400'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23666' font-size='14'%3E${encodeURIComponent(prompt.substring(0, 50))}%3C/text%3E%3C/svg%3E`;
-  } catch {
-    return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400'%3E%3Crect fill='%23e0e0e0' width='400' height='400'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999'%3EImage Generation Error%3C/text%3E%3C/svg%3E`;
+    const { supabase } = await import('@/lib/supabase');
+    
+    const { data, error } = await supabase.functions.invoke('creative-studio-imagen', {
+      body: {
+        prompt,
+        imageType,
+        style
+      }
+    });
+
+    if (error) throw error;
+
+    if (data?.data?.image?.bytesBase64Encoded) {
+      return `data:image/png;base64,${data.data.image.bytesBase64Encoded}`;
+    }
+
+    throw new Error('No image data in response');
+  } catch (err) {
+    console.error('Image generation failed:', err);
+    throw new GeminiAPIError(
+      `Image generation failed: ${err instanceof Error ? err.message : 'Unknown error'}`,
+      500,
+      err
+    );
   }
 }
 

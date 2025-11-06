@@ -1,30 +1,39 @@
-// AI Image Generation Component - Gemini 2.5 + Imagen 3.0
+// AI Image Generation Component - Google Imagen 3.0
 import { useState } from 'react';
 import { Image, Sparkles, Download, Copy, CheckCircle2, Palette, Camera, Wand2 } from 'lucide-react';
-import { generateImage, enhanceProductImage } from '@/services/geminiService';
+import { generateImage } from '@/services/geminiService';
 
 interface GeneratedImage {
   id: string;
   url: string;
   prompt: string;
+  imageType: string;
+  style: string;
   timestamp: Date;
 }
 
 export default function AIImageGeneration() {
   const [prompt, setPrompt] = useState('');
-  const [enhancementType, setEnhancementType] = useState('background');
+  const [imageType, setImageType] = useState('product_poster');
+  const [style, setStyle] = useState('realistic');
   const [isGenerating, setIsGenerating] = useState(false);
-  const [isEnhancing, setIsEnhancing] = useState(false);
   const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
   const [selectedImageUrl, setSelectedImageUrl] = useState('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const enhancementOptions = [
-    { value: 'background', label: 'Background Removal', icon: Camera, description: 'Clean professional background' },
-    { value: 'lighting', label: 'Lighting Enhancement', icon: Palette, description: 'Improve lighting and colors' },
-    { value: 'detail', label: 'Detail Enhancement', icon: Wand2, description: 'Sharpen and enhance details' },
-    { value: 'lifestyle', label: 'Lifestyle Context', icon: Image, description: 'Add lifestyle context' }
+  const imageTypeOptions = [
+    { value: 'product_poster', label: 'Product Poster', description: '1:1 Square' },
+    { value: 'social_ad', label: 'Social Media Ad', description: '1:1 Square' },
+    { value: 'hero_banner', label: 'Hero Banner', description: '16:9 Widescreen' },
+    { value: 'lifestyle_shot', label: 'Lifestyle Shot', description: '4:3 Natural' }
+  ];
+
+  const styleOptions = [
+    { value: 'realistic', label: 'Realistic', icon: Camera },
+    { value: 'artistic', label: 'Artistic', icon: Palette },
+    { value: 'minimalist', label: 'Minimalist', icon: Wand2 },
+    { value: 'vintage', label: 'Vintage', icon: Image }
   ];
 
   async function generateImageAI(e: React.FormEvent) {
@@ -35,11 +44,13 @@ export default function AIImageGeneration() {
     setError(null);
 
     try {
-      const imageUrl = await generateImage(prompt);
+      const imageUrl = await generateImage(prompt, imageType, style);
       const newImage: GeneratedImage = {
         id: Date.now().toString(),
         url: imageUrl,
         prompt: prompt,
+        imageType,
+        style,
         timestamp: new Date()
       };
       setGeneratedImages(prev => [newImage, ...prev]);
@@ -49,28 +60,6 @@ export default function AIImageGeneration() {
       setError(err.message || 'Failed to generate image');
     } finally {
       setIsGenerating(false);
-    }
-  }
-
-  async function enhanceImage() {
-    if (!selectedImageUrl) return;
-
-    setIsEnhancing(true);
-    setError(null);
-
-    try {
-      const enhancedUrl = await enhanceProductImage(selectedImageUrl, enhancementType);
-      const enhancedImage: GeneratedImage = {
-        id: (Date.now() + 1).toString(),
-        url: enhancedUrl,
-        prompt: `Enhanced: ${enhancementType} - ${generatedImages.find(img => img.url === selectedImageUrl)?.prompt}`,
-        timestamp: new Date()
-      };
-      setGeneratedImages(prev => [enhancedImage, ...prev]);
-    } catch (err: any) {
-      setError(err.message || 'Failed to enhance image');
-    } finally {
-      setIsEnhancing(false);
     }
   }
 
@@ -92,18 +81,63 @@ export default function AIImageGeneration() {
   return (
     <div className="bg-white rounded-2xl shadow-xl p-6 border border-slate-200/50">
       <div className="flex items-center gap-3 mb-6">
-        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center">
+        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
           <Image className="w-6 h-6 text-white" />
         </div>
         <div>
           <h2 className="text-2xl font-bold text-slate-800">AI Image Generation</h2>
-          <p className="text-sm text-slate-600">Powered by Gemini 2.5 + Imagen 3.0</p>
+          <p className="text-sm text-slate-600">Powered by Google Imagen 3.0</p>
         </div>
       </div>
 
       {/* Image Generation Form */}
       <form onSubmit={generateImageAI} className="mb-6">
         <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-2">
+              Image Type
+            </label>
+            <select
+              value={imageType}
+              onChange={(e) => setImageType(e.target.value)}
+              className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+              disabled={isGenerating}
+            >
+              {imageTypeOptions.map(option => (
+                <option key={option.value} value={option.value}>
+                  {option.label} ({option.description})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-2">
+              Art Style
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              {styleOptions.map(option => {
+                const Icon = option.icon;
+                return (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => setStyle(option.value)}
+                    className={`p-3 rounded-lg border transition-all flex items-center gap-2 ${
+                      style === option.value
+                        ? 'bg-blue-50 border-blue-300 text-blue-700'
+                        : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'
+                    }`}
+                    disabled={isGenerating}
+                  >
+                    <Icon className="w-4 h-4" />
+                    <span className="text-sm font-medium">{option.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-2">
               Describe the image you want to generate
@@ -113,7 +147,7 @@ export default function AIImageGeneration() {
               onChange={(e) => setPrompt(e.target.value)}
               placeholder="e.g., A handcrafted wooden jewelry box with intricate carvings, warm lighting, professional product photography..."
               rows={3}
-              className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-purple-600 focus:border-transparent resize-none"
+              className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-transparent resize-none"
               disabled={isGenerating}
             />
             <div className="text-xs text-slate-500 mt-1">
@@ -124,58 +158,21 @@ export default function AIImageGeneration() {
           <button
             type="submit"
             disabled={isGenerating || !prompt.trim()}
-            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition disabled:opacity-50 flex items-center justify-center gap-2"
+            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition disabled:opacity-50 flex items-center justify-center gap-2"
           >
             <Sparkles className={`w-5 h-5 ${isGenerating ? 'animate-spin' : ''}`} />
-            <span>{isGenerating ? 'Generating Image...' : 'Generate Image'}</span>
+            <span>{isGenerating ? 'Generating Image...' : 'Generate with Imagen 3.0'}</span>
           </button>
         </div>
       </form>
 
-      {/* Enhancement Section */}
-      {selectedImageUrl && (
-        <div className="mb-6 p-5 bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl border border-slate-200">
-          <h3 className="text-lg font-semibold text-slate-800 mb-3">AI Image Enhancement</h3>
-          <div className="grid grid-cols-2 gap-3 mb-4">
-            {enhancementOptions.map((option) => {
-              const Icon = option.icon;
-              return (
-                <button
-                  key={option.value}
-                  onClick={() => setEnhancementType(option.value)}
-                  className={`p-3 rounded-lg border transition-all ${
-                    enhancementType === option.value
-                      ? 'bg-purple-50 border-purple-300 text-purple-700'
-                      : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <Icon className="w-4 h-4" />
-                    <div className="text-left">
-                      <div className="text-sm font-medium">{option.label}</div>
-                      <div className="text-xs opacity-75">{option.description}</div>
-                    </div>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-          <button
-            onClick={enhanceImage}
-            disabled={isEnhancing}
-            className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white py-2.5 rounded-lg font-medium hover:from-emerald-600 hover:to-teal-700 transition disabled:opacity-50 flex items-center justify-center gap-2"
-          >
-            <Wand2 className={`w-4 h-4 ${isEnhancing ? 'animate-spin' : ''}`} />
-            <span>{isEnhancing ? 'Enhancing...' : 'Enhance Selected Image'}</span>
-          </button>
-        </div>
-      )}
+
 
       {error && (
         <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
           <p className="text-sm text-red-800">{error}</p>
           <p className="text-xs text-red-600 mt-1">
-            Check your Gemini API key configuration
+            Check your Imagen API key configuration in your environment
           </p>
         </div>
       )}
@@ -195,7 +192,17 @@ export default function AIImageGeneration() {
                     onClick={() => setSelectedImageUrl(image.url)}
                   />
                 </div>
-                <p className="text-sm text-slate-700 mb-3 line-clamp-2">{image.prompt}</p>
+                <div className="mb-3 space-y-1">
+                  <p className="text-sm text-slate-700 line-clamp-2">{image.prompt}</p>
+                  <div className="flex gap-2 text-xs">
+                    <span className="inline-block px-2 py-1 bg-blue-100 text-blue-700 rounded">
+                      {image.imageType}
+                    </span>
+                    <span className="inline-block px-2 py-1 bg-purple-100 text-purple-700 rounded">
+                      {image.style}
+                    </span>
+                  </div>
+                </div>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => downloadImage(image.url, image.prompt)}
@@ -206,7 +213,7 @@ export default function AIImageGeneration() {
                   </button>
                   <button
                     onClick={() => copyToClipboard(image.prompt, image.id)}
-                    className="px-3 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition text-sm font-medium flex items-center justify-center"
+                    className="px-3 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition text-sm font-medium flex items-center justify-center"
                   >
                     {copiedId === image.id ? (
                       <CheckCircle2 className="w-3 h-3" />

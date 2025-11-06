@@ -30,8 +30,8 @@ const AI_FEATURES: AIFeature[] = [
   },
   {
     id: 'imagen',
-    title: 'Imagen 2 Image Creation',
-    description: 'Generate beautiful product images and marketing visuals',
+    title: 'Google Imagen 3.0 Image Creation',
+    description: 'Generate beautiful product images with Google\'s advanced AI',
     icon: Image,
     color: 'bg-indigo-100',
     gradient: 'from-indigo-500 to-indigo-600'
@@ -323,26 +323,19 @@ function ImagenImageGenerator() {
   async function generateImage() {
     setGenerating(true);
     try {
-      // Import the function dynamically to avoid circular imports
-      const { generateImageDescription } = await import('@/services/geminiService');
+      const { generateImage } = await import('@/services/geminiService');
       
-      const imageData = {
-        productName: 'Custom Product', // Using generic name since prompt contains details
-        imageType: imagenForm.imageType,
-        style: imagenForm.style,
-        prompt: imagenForm.prompt
-      };
+      const imageUrl = await generateImage(
+        imagenForm.prompt,
+        imagenForm.imageType,
+        imagenForm.style
+      );
 
-      const imageResult = await generateImageDescription(imageData);
       setResult({
         image: {
-          imageUrl: null, // Real image generation not available via standard API
-          description: imageResult.description,
-          prompt: imageResult.prompt,
-          dimensions: imageResult.technicalSpecs.dimensions,
-          format: imageResult.technicalSpecs.format,
-          aspectRatio: imageResult.technicalSpecs.aspectRatio,
-          note: 'Generated detailed image generation prompt - perfect for creating professional images'
+          imageUrl: imageUrl,
+          prompt: imagenForm.prompt,
+          note: 'Image generated with Google Imagen 3.0'
         },
         prompt: imagenForm.prompt,
         imageType: imagenForm.imageType,
@@ -363,9 +356,9 @@ function ImagenImageGenerator() {
       <div>
         <h2 className="text-2xl font-bold text-gray-900 mb-2 flex items-center space-x-2">
           <Image className="w-6 h-6 text-indigo-600" />
-          <span>Imagen 2 Image Generation</span>
+          <span>Google Imagen 3.0 Image Generation</span>
         </h2>
-        <p className="text-gray-600">Create beautiful product images and marketing visuals with AI</p>
+        <p className="text-gray-600">Create beautiful product images and marketing visuals with Google's advanced AI model</p>
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200 p-8 space-y-6">
@@ -420,43 +413,47 @@ function ImagenImageGenerator() {
           className="w-full bg-gradient-to-r from-indigo-600 to-indigo-700 text-white px-6 py-4 rounded-lg font-semibold hover:from-indigo-700 hover:to-indigo-800 transition disabled:opacity-50 flex items-center justify-center space-x-2"
         >
           <Sparkles className="w-5 h-5" />
-          <span>{generating ? 'Generating Image...' : 'Generate Image with Imagen 2'}</span>
+          <span>{generating ? 'Generating Image...' : 'Generate with Google Imagen 3.0'}</span>
         </button>
       </div>
 
       {result && (
         <div className="bg-gray-50 rounded-xl border border-gray-200 p-8">
-          <h3 className="text-xl font-bold text-gray-900 mb-6">Generated Image Creation Guide</h3>
+          <h3 className="text-xl font-bold text-gray-900 mb-6">Generated Image</h3>
           <div className="space-y-4">
-            <div className="bg-white border border-gray-200 rounded-lg p-6">
-              <div className="flex items-center space-x-3 mb-3">
-                <Image className="w-6 h-6 text-indigo-600" />
-                <span className="font-semibold text-gray-900">Image Generation Prompt</span>
+            {result.image?.imageUrl && (
+              <div className="bg-white border border-gray-200 rounded-lg p-6">
+                <img
+                  src={result.image.imageUrl}
+                  alt={result.image.prompt}
+                  className="w-full h-auto rounded-lg object-cover max-h-96"
+                />
               </div>
-              <p className="text-gray-700 whitespace-pre-wrap text-sm font-mono bg-gray-50 p-3 rounded">{result.image?.prompt}</p>
-            </div>
+            )}
             
             <div className="bg-white border border-gray-200 rounded-lg p-6">
               <div className="flex items-center space-x-3 mb-3">
                 <Image className="w-6 h-6 text-indigo-600" />
-                <span className="font-semibold text-gray-900">Production Guide</span>
+                <span className="font-semibold text-gray-900">Image Details</span>
               </div>
-              <p className="text-gray-700 whitespace-pre-wrap text-sm">{result.image?.description}</p>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div className="bg-white border border-gray-200 rounded-lg p-4">
-                <span className="font-semibold text-gray-900">Dimensions:</span>
-                <p className="text-gray-600">{result.image?.dimensions.width} × {result.image?.dimensions.height}px</p>
-              </div>
-              <div className="bg-white border border-gray-200 rounded-lg p-4">
-                <span className="font-semibold text-gray-900">Aspect Ratio:</span>
-                <p className="text-gray-600">{result.image?.aspectRatio}</p>
+              <div className="space-y-2 text-sm">
+                <div>
+                  <span className="font-medium text-gray-700">Prompt:</span>
+                  <p className="text-gray-600">{result.image?.prompt}</p>
+                </div>
+                <div className="flex gap-2 pt-2">
+                  <span className="inline-block px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs font-medium">
+                    {result.imageType}
+                  </span>
+                  <span className="inline-block px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">
+                    {result.style}
+                  </span>
+                </div>
               </div>
             </div>
             
             <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
-              <p className="text-indigo-800 text-sm font-medium">💡 Pro Tip: {result.image?.note}</p>
+              <p className="text-indigo-800 text-sm font-medium">✨ {result.image?.note}</p>
             </div>
           </div>
         </div>

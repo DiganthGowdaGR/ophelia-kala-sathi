@@ -2,7 +2,7 @@ type Language = 'en' | 'hi' | 'bn' | 'te' | 'mr' | 'ta' | 'ur' | 'gu' | 'kn' | '
 
 const translations: Partial<Record<Language, Record<string, any>>> = {};
 
-const modules = import.meta.glob('@/locales/*.json', { eager: true });
+const modules = import.meta.glob('../locales/*.json', { eager: true });
 
 for (const [path, module] of Object.entries(modules)) {
   const match = path.match(/\/([a-z]+)\.json$/);
