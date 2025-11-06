@@ -1,8 +1,10 @@
-// Enhanced AI Chatbot Component
-// Multi-modal AI assistant with language, voice, and image analysis support
+/* Enhanced AI Chatbot Component
+ * Multi-modal AI assistant with language, voice, and image analysis support
+ */
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { supabase } from '@/lib/supabase';
+import { generateChatResponse } from '@/services/geminiService';
 
 interface Message {
   role: 'user' | 'assistant' | 'system';
@@ -28,6 +30,28 @@ export default function EnhancedAIChatbot({ assistantType, onNewMessage }: Enhan
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
+
+  // Small set of dummy prebuilt messages. If the user's query matches any keyword
+  // for an entry below, the assistant will immediately return the prebuilt
+  // response. Otherwise we return a rate-limit message (per your request).
+  const PREBUILT_MESSAGES: { keywords: string[]; message: string }[] = [
+    {
+      keywords: ['pricing', 'price', 'cost', 'how much'],
+      message: 'Prebuilt: For pricing guidance, we recommend checking similar products and adjusting for material + labor + 20% margin.'
+    },
+    {
+      keywords: ['shipping', 'delivery', 'ship'],
+      message: 'Prebuilt: Standard delivery takes 3-7 business days. Expedited shipping options are available at checkout.'
+    },
+    {
+      keywords: ['return', 'refund', 'exchange'],
+      message: 'Prebuilt: Returns accepted within 14 days in original condition. Refunds processed within 5 business days after we receive the item.'
+    },
+    {
+      keywords: ['materials', 'material', 'wood', 'metal', 'fabric'],
+      message: 'Prebuilt: We primarily use sustainably-sourced materials; contact the artisan for custom-material requests.'
+    }
+  ];
 
   useEffect(() => {
     // Generate session ID
@@ -151,41 +175,31 @@ export default function EnhancedAIChatbot({ assistantType, onNewMessage }: Enhan
     setLoading(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke('enhanced-ai-assistant', {
-        body: { 
-          message: userMessage,
-          assistantType: assistantType,
-          language: selectedLanguage,
-          sessionId: sessionId,
-          conversationHistory: messages.map(m => ({ role: m.role, content: m.content }))
+      const lc = userMessage.toLowerCase();
+
+      // If message matches any prebuilt keyword, immediately return the prebuilt message
+      for (const entry of PREBUILT_MESSAGES) {
+        for (const kw of entry.keywords) {
+          if (lc.includes(kw)) {
+            setMessages(prev => [...prev, {
+              role: 'assistant',
+              content: entry.message,
+              timestamp: new Date()
+            }]);
+            if (onNewMessage) onNewMessage();
+            return;
+          }
         }
-      });
-
-      if (error) throw error;
-
-      const responseMessage = data.data?.message || data.message;
-      setMessages(prev => [...prev, {
-        role: 'assistant',
-        content: responseMessage,
-        timestamp: new Date()
-      }]);
-
-      // Text-to-speech if enabled
-      if ('speechSynthesis' in window) {
-        const utterance = new SpeechSynthesisUtterance(responseMessage);
-        utterance.lang = getLanguageCode(selectedLanguage);
-        utterance.rate = 0.9;
-        // speechSynthesis.speak(utterance); // Uncomment to enable auto-speak
       }
 
-      if (onNewMessage) onNewMessage();
-    } catch (error) {
-      console.error('Error:', error);
+      // If no prebuilt match, return rate limit reached (per user's request)
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: "I apologize, but I'm having trouble responding right now. Please try again.",
+        content: 'Rate limit reached. Please try again later.',
         timestamp: new Date()
       }]);
+
+      if (onNewMessage) onNewMessage();
     } finally {
       setLoading(false);
     }

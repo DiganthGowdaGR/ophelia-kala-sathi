@@ -1,0 +1,24 @@
+{
+  "nav": {
+    "marketplace": "మార్కెట్‌ప్లేస్",
+    "findArtisans": "కళాకారులను కనుగొనండి",
+    "dashboard": "డ్యాష్‌బోర్డ్",
+    "creativeStudio": "సృజనాత్మక స్టూడియో",
+    "agentMode": "ఏజెంట్ మోడ్",
+    "socialPosting": "సోషల్ పోస్టింగ్ పర్యవేక్షణ",
+    "cart": "కార్ట్",
+    "profile": "ప్రొఫైల్",
+    "logout": "లాగ్ అవుట్",
+    "login": "లాగిన్",
+    "signUp": "సైన్ అప్ చేయండి",
+    "notifications": "ప్రకటనలు",
+    "selectLanguage": "భాషను ఎంచుకోండి"
+  },
+  "common": {
+    "search": "వెతకండి",
+    "filter": "ఫిల్టర్",
+    "loading": "లోడ్ అవుతోంది...",
+    "error": "లోపం",
+    "success": "విజయం"
+  }
+}

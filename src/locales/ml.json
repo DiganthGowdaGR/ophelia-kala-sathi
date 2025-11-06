@@ -1,0 +1,24 @@
+{
+  "nav": {
+    "marketplace": "മാർക്കറ്റ്‌പ്ലേസ്",
+    "findArtisans": "കരിഗരിമാരെ കണ്ടെത്തുക",
+    "dashboard": "ഡാഷ്‌ബോർഡ്",
+    "creativeStudio": "സൃഷ്ടിപരമായ സ്‌റ്റുഡിയോ",
+    "agentMode": "ഏജന്റ് മോഡ്",
+    "socialPosting": "സോഷ്യൽ പോസ്റ്റിംഗ് നിരീക്ഷണം",
+    "cart": "കാർട്ട്",
+    "profile": "പ്രൊഫൈൽ",
+    "logout": "ലോഗ് ഔട്ട്",
+    "login": "ലോഗിൻ",
+    "signUp": "സൈൻ അപ്പ്",
+    "notifications": "അറിയിപ്പുകൾ",
+    "selectLanguage": "ഭാഷ തിരഞ്ഞെടുക്കുക"
+  },
+  "common": {
+    "search": "തിരയുക",
+    "filter": "ഫിൽട്ടർ",
+    "loading": "ലോഡ് ചെയ്യുന്നു...",
+    "error": "പിശക്",
+    "success": "വിജയം"
+  }
+}

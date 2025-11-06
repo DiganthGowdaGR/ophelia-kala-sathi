@@ -1,19 +1,65 @@
 import { useState, useEffect } from 'react';
-import { User, Briefcase, Award, Star, Calendar, MessageSquare, Settings, Camera, MapPin, Clock, Sparkles } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { 
+  User, 
+  MapPin, 
+  Star,
+  Eye,
+  Award,
+  Settings,
+  Camera,
+  Briefcase,
+  Mail,
+  Globe2,
+  Phone,
+  Plus,
+  Trash2,
+  Share2,
+  Edit,
+  X
+} from 'lucide-react';
 import Navigation from '@/components/shared/Navigation';
 import { supabase } from '@/lib/supabase';
-import AIProfileOptimizer from '@/components/artisan/AIProfileOptimizer';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function ArtisanProfilePage() {
   const [activeTab, setActiveTab] = useState('overview');
   const [processing, setProcessing] = useState(false);
-  const [results, setResults] = useState<any>(null);
   const [profileData, setProfileData] = useState<any>(null);
-  const [aiGeneratedBio, setAiGeneratedBio] = useState<string>('');
+  const [products, setProducts] = useState<any[]>([]);
+  const [showAddProduct, setShowAddProduct] = useState(false);
+  const [postingToMarket, setPostingToMarket] = useState<string | null>(null);
+  const [deletingProduct, setDeletingProduct] = useState<string | null>(null);
+  const [newProduct, setNewProduct] = useState({ name: '', description: '', price: '', category: '' });
+  const navigate = useNavigate();
+  const { user } = useAuth();
 
   useEffect(() => {
     loadProfile();
-  }, []);
+    loadProducts();
+    
+    if (user?.id) {
+      const subscription = supabase
+        .channel(`artisan_products_${user.id}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'artisan_products',
+            filter: `artisan_id=eq.${user.id}`
+          },
+          () => {
+            loadProducts();
+          }
+        )
+        .subscribe();
+      
+      return () => {
+        subscription.unsubscribe();
+      };
+    }
+  }, [user?.id]);
 
   const loadProfile = async () => {
     try {
@@ -30,740 +76,510 @@ export default function ArtisanProfilePage() {
     }
   };
 
+  const loadProducts = async () => {
+    try {
+      if (!user?.id) return;
+      const { data, error } = await supabase
+        .from('artisan_products')
+        .select('*')
+        .eq('artisan_id', user.id)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      setProducts(data || []);
+    } catch (error) {
+      console.error('Error loading products:', error);
+    }
+  };
+
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     setProcessing(true);
-    
-    const formData = new FormData(e.target as HTMLFormElement);
-    
     try {
+      const form = e.target as HTMLFormElement;
+      const formData = new FormData(form);
+      
       const { data: { user } } = await supabase.auth.getUser();
-      const { data: result, error } = await supabase.functions.invoke('profile-manager', {
-        body: {
+      const { error } = await supabase.functions.invoke('profile-manager', {
+        body: { 
           action: 'updateProfile',
           userId: user?.id,
-          profileData: {
-            displayName: formData.get('displayName'),
-            bio: formData.get('bio'),
-            location: formData.get('location'),
-            timezone: formData.get('timezone'),
-            yearsExperience: parseInt(formData.get('yearsExperience') as string)
-          }
+          profile: Object.fromEntries(formData)
         }
       });
       
       if (error) throw error;
-      setResults(result);
-      loadProfile();
+      await loadProfile();
     } catch (error: any) {
-      setResults({ error: error.message });
+      console.error('Error updating profile:', error);
     } finally {
       setProcessing(false);
     }
   };
 
-  const handleAddSkill = async (e: React.FormEvent) => {
+  const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user?.id) return;
+    
     setProcessing(true);
-    
-    const formData = new FormData(e.target as HTMLFormElement);
-    
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      const { data: result, error } = await supabase.functions.invoke('profile-manager', {
-        body: {
-          action: 'addSkill',
-          userId: user?.id,
-          skillData: {
-            name: formData.get('skillName'),
-            level: formData.get('skillLevel'),
-            years: parseInt(formData.get('skillYears') as string),
-            isPrimary: formData.get('isPrimary') === 'on'
+      const { error } = await supabase
+        .from('artisan_products')
+        .insert([
+          {
+            artisan_id: user.id,
+            name: newProduct.name,
+            description: newProduct.description,
+            price: parseFloat(newProduct.price),
+            category: newProduct.category,
+            is_active: true,
+            stock_quantity: 0
           }
-        }
-      });
+        ]);
       
       if (error) throw error;
-      setResults(result);
-      loadProfile();
-      (e.target as HTMLFormElement).reset();
-    } catch (error: any) {
-      setResults({ error: error.message });
+      setNewProduct({ name: '', description: '', price: '', category: '' });
+      setShowAddProduct(false);
+      await loadProducts();
+    } catch (error) {
+      console.error('Error adding product:', error);
     } finally {
       setProcessing(false);
     }
   };
 
-  const handleCreateWorkshop = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setProcessing(true);
+  const handleDeleteProduct = async (productId: string) => {
+    if (!confirm('Are you sure you want to delete this product?')) return;
     
-    const formData = new FormData(e.target as HTMLFormElement);
-    
+    setDeletingProduct(productId);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      const { data: result, error } = await supabase.functions.invoke('workshop-scheduler', {
-        body: {
-          action: 'createWorkshop',
-          artisanId: user?.id,
-          workshopData: {
-            title: formData.get('workshopTitle'),
-            description: formData.get('workshopDescription'),
-            duration: parseInt(formData.get('duration') as string),
-            maxParticipants: parseInt(formData.get('maxParticipants') as string),
-            price: parseFloat(formData.get('price') as string),
-            skillLevel: formData.get('skillLevel'),
-            materialsIncluded: formData.get('materialsIncluded') === 'on'
-          }
-        }
-      });
+      const { error } = await supabase
+        .from('artisan_products')
+        .delete()
+        .eq('id', productId);
       
       if (error) throw error;
-      setResults(result);
-      (e.target as HTMLFormElement).reset();
-    } catch (error: any) {
-      setResults({ error: error.message });
+      await loadProducts();
+    } catch (error) {
+      console.error('Error deleting product:', error);
     } finally {
-      setProcessing(false);
+      setDeletingProduct(null);
+    }
+  };
+
+  const handlePostToMarket = async (product: any) => {
+    setPostingToMarket(product.id);
+    try {
+      const { error } = await supabase
+        .from('artisan_products')
+        .update({ is_active: true, posted_to_market: true, posted_at: new Date() })
+        .eq('id', product.id);
+      
+      if (error) throw error;
+      await loadProducts();
+    } catch (error) {
+      console.error('Error posting to market:', error);
+    } finally {
+      setPostingToMarket(null);
     }
   };
 
   const tabs = [
     { id: 'overview', label: 'Profile Overview', icon: User },
-    { id: 'ai-optimizer', label: 'AI Optimizer', icon: Sparkles },
-    { id: 'portfolio', label: 'Portfolio', icon: Briefcase },
-    { id: 'skills', label: 'Skills & Certs', icon: Award },
-    { id: 'workshops', label: 'Workshops', icon: Calendar },
-    { id: 'reviews', label: 'Reviews', icon: Star },
+    { id: 'products', label: 'Products', icon: Briefcase },
+    { id: 'skills', label: 'Skills & Hobbies', icon: Award },
+    { id: 'reviews', label: 'Reviews & Ratings', icon: Star },
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-zinc-50">
+    <div className="min-h-screen bg-primary">
       <Navigation />
       
-      <div className="max-w-7xl mx-auto px-4 py-12">
-        {/* Profile Header */}
-        <div className="bg-white rounded-2xl shadow-lg mb-8 overflow-hidden">
-          {/* Cover Image */}
-          <div className="h-48 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 relative">
-            <button className="absolute bottom-4 right-4 px-4 py-2 bg-white/20 backdrop-blur-sm text-white rounded-lg hover:bg-white/30 transition flex items-center space-x-2">
-              <Camera className="w-4 h-4" />
-              <span className="text-sm">Change Cover</span>
-            </button>
-          </div>
-          
-          {/* Profile Info */}
-          <div className="px-8 pb-8">
-            <div className="flex items-end justify-between -mt-16 mb-6">
-              <div className="flex items-end space-x-4">
-                <div className="w-32 h-32 rounded-2xl bg-white shadow-xl border-4 border-white overflow-hidden">
-                  <div className="w-full h-full bg-gradient-to-br from-indigo-400 to-purple-400 flex items-center justify-center">
-                    <User className="w-16 h-16 text-white" />
-                  </div>
-                </div>
-                <div className="pb-2">
-                  <h1 className="text-3xl font-bold text-gray-900">{profileData?.profile?.display_name || 'Your Name'}</h1>
-                  <p className="text-gray-600 flex items-center space-x-2 mt-1">
-                    <MapPin className="w-4 h-4" />
-                    <span>{profileData?.profile?.location || 'Location not set'}</span>
-                  </p>
-                </div>
-              </div>
-              
-              <button className="px-6 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition flex items-center space-x-2">
-                <Settings className="w-4 h-4" />
-                <span>Edit Profile</span>
-              </button>
-            </div>
-            
-            {/* Stats */}
-            <div className="grid grid-cols-4 gap-4 mb-6">
-              <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl">
-                <p className="text-2xl font-bold text-gray-900">{profileData?.portfolio?.length || 0}</p>
-                <p className="text-sm text-gray-600">Portfolio Items</p>
-              </div>
-              <div className="text-center p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl">
-                <p className="text-2xl font-bold text-gray-900">{profileData?.skills?.length || 0}</p>
-                <p className="text-sm text-gray-600">Skills</p>
-              </div>
-              <div className="text-center p-4 bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl">
-                <p className="text-2xl font-bold text-gray-900">{profileData?.achievements?.length || 0}</p>
-                <p className="text-sm text-gray-600">Achievements</p>
-              </div>
-              <div className="text-center p-4 bg-gradient-to-br from-emerald-50 to-green-50 rounded-xl">
-                <p className="text-2xl font-bold text-gray-900">4.9</p>
-                <p className="text-sm text-gray-600">Average Rating</p>
-              </div>
-            </div>
-            
-            <p className="text-gray-700 leading-relaxed">
-              {profileData?.profile?.bio || 'Add a bio to tell customers about your craft and passion...'}
-            </p>
-          </div>
-        </div>
-
-        {/* Tab Navigation */}
-        <div className="flex space-x-2 mb-8 bg-white rounded-xl p-2 shadow-sm">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center space-x-2 px-6 py-3 rounded-lg transition-all ${
-                activeTab === tab.id
-                  ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md'
-                  : 'text-gray-600 hover:bg-gray-50'
-              }`}
-            >
-              <tab.icon className="w-5 h-5" />
-              <span className="font-medium">{tab.label}</span>
-            </button>
-          ))}
-        </div>
-
-        {/* Profile Overview Tab */}
-        {activeTab === 'overview' && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Edit Profile Form */}
-            <div className="bg-white rounded-2xl shadow-lg p-8">
-              <div className="flex items-center space-x-3 mb-6">
-                <User className="w-6 h-6 text-indigo-500" />
-                <h3 className="text-2xl font-bold text-gray-900">Update Profile</h3>
-              </div>
-              
-              <form onSubmit={handleProfileUpdate} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Display Name</label>
-                  <input
-                    type="text"
-                    name="displayName"
-                    defaultValue={profileData?.profile?.display_name}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                    required
-                  />
+      <div className="w-full pt-16">
+        {/* Instagram-style Profile Header */}
+        <div className="bg-primary border-b border-border sticky top-0 z-40">
+          <div className="max-w-6xl mx-auto px-4 py-6 sm:py-8">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 sm:gap-8">
+              {/* Profile Image & Info */}
+              <div className="flex items-start gap-4 sm:gap-6 flex-1 min-w-0">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-secondary flex-shrink-0 flex items-center justify-center border border-border">
+                  <User className="w-8 h-8 sm:w-10 sm:h-10 text-accent" />
                 </div>
                 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Bio</label>
-                  <textarea
-                    name="bio"
-                    rows={4}
-                    defaultValue={profileData?.profile?.bio}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
-                    placeholder="Tell your story..."
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
-                  <input
-                    type="text"
-                    name="location"
-                    defaultValue={profileData?.profile?.location}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                    placeholder="City, Country"
-                  />
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Timezone</label>
-                    <select
-                      name="timezone"
-                      defaultValue={profileData?.profile?.timezone}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                    >
-                      <option value="UTC">UTC</option>
-                      <option value="America/New_York">Eastern Time</option>
-                      <option value="America/Chicago">Central Time</option>
-                      <option value="America/Denver">Mountain Time</option>
-                      <option value="America/Los_Angeles">Pacific Time</option>
-                      <option value="Europe/London">London</option>
-                      <option value="Europe/Paris">Paris</option>
-                      <option value="Asia/Tokyo">Tokyo</option>
-                    </select>
-                  </div>
+                <div className="flex-1 min-w-0 pt-1">
+                  <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-text-primary truncate">
+                    {profileData?.profile?.display_name || 'Your Name'}
+                  </h1>
                   
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Years Experience</label>
-                    <input
-                      type="number"
-                      name="yearsExperience"
-                      defaultValue={profileData?.profile?.years_experience}
-                      min="0"
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                    />
+                  {profileData?.profile?.location && (
+                    <p className="text-text-secondary text-sm sm:text-base flex items-center gap-1 mt-1">
+                      <MapPin className="w-4 h-4 flex-shrink-0" />
+                      <span className="truncate">{profileData.profile.location}</span>
+                    </p>
+                  )}
+                  
+                  {/* Stats */}
+                  <div className="flex gap-6 sm:gap-8 mt-3 text-sm">
+                    <div className="flex flex-col">
+                      <span className="font-bold text-text-primary text-base">{products.length}</span>
+                      <span className="text-text-secondary text-xs">products</span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="font-bold text-text-primary text-base flex items-center gap-1">
+                        <Star className="w-4 h-4 text-accent fill-accent" />
+                        {profileData?.rating || 4.9}
+                      </span>
+                      <span className="text-text-secondary text-xs">rating</span>
+                    </div>
                   </div>
                 </div>
-                
-                <button
-                  type="submit"
-                  disabled={processing}
-                  className="w-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50"
-                >
-                  {processing ? 'Updating...' : 'Update Profile'}
-                </button>
-              </form>
-            </div>
-
-            {/* Availability Status */}
-            <div className="bg-white rounded-2xl shadow-lg p-8">
-              <div className="flex items-center space-x-3 mb-6">
-                <Clock className="w-6 h-6 text-purple-500" />
-                <h3 className="text-2xl font-bold text-gray-900">Availability Status</h3>
               </div>
               
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-green-50 rounded-xl border border-green-200">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                    <div>
-                      <p className="font-semibold text-gray-900">Available</p>
-                      <p className="text-sm text-gray-600">Currently taking orders</p>
-                    </div>
-                  </div>
-                  <button className="px-4 py-2 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600 transition">
-                    Active
-                  </button>
-                </div>
-                
-                <div className="p-4 bg-gray-50 rounded-xl">
-                  <h4 className="font-semibold text-gray-900 mb-3">Working Hours</h4>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Monday - Friday</span>
-                      <span className="font-medium text-gray-900">9:00 AM - 6:00 PM</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Saturday</span>
-                      <span className="font-medium text-gray-900">10:00 AM - 4:00 PM</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Sunday</span>
-                      <span className="font-medium text-gray-900">Closed</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="p-4 bg-indigo-50 rounded-xl border border-indigo-200">
-                  <h4 className="font-semibold text-gray-900 mb-2">Auto-Reply Message</h4>
-                  <p className="text-sm text-gray-600 mb-3">Send automatic replies when you're offline</p>
-                  <button className="px-4 py-2 bg-indigo-500 text-white rounded-lg text-sm hover:bg-indigo-600 transition">
-                    Configure Auto-Reply
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* AI Optimizer Tab */}
-        {activeTab === 'ai-optimizer' && (
-          <div className="max-w-4xl mx-auto">
-            <AIProfileOptimizer
-              bio={profileData?.profile?.bio || ''}
-              skills={profileData?.skills?.map((s: any) => s.skill_name) || []}
-              yearsExperience={profileData?.profile?.years_experience || 0}
-              portfolioCount={profileData?.portfolio?.length || 0}
-              onBioGenerated={(bio) => {
-                setAiGeneratedBio(bio);
-                // Optionally auto-fill the bio field
-                const bioTextarea = document.querySelector('textarea[name="bio"]') as HTMLTextAreaElement;
-                if (bioTextarea) {
-                  bioTextarea.value = bio;
-                }
-              }}
-            />
-            
-            {aiGeneratedBio && (
-              <div className="mt-6 bg-white rounded-xl shadow-lg p-6">
-                <h3 className="text-lg font-bold text-gray-900 mb-3 flex items-center space-x-2">
-                  <Sparkles className="w-5 h-5 text-purple-600" />
-                  <span>AI-Generated Bio</span>
-                </h3>
-                <div className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg border border-purple-200">
-                  <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">{aiGeneratedBio}</p>
-                </div>
-                <div className="mt-4 flex items-center justify-between">
-                  <p className="text-sm text-gray-600">Switch to "Profile Overview" tab to update your bio</p>
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(aiGeneratedBio);
-                      alert('Bio copied to clipboard!');
-                    }}
-                    className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition text-sm font-medium"
-                  >
-                    Copy Bio
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Portfolio Tab */}
-        {activeTab === 'portfolio' && (
-          <div className="bg-white rounded-2xl shadow-lg p-8">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center space-x-3">
-                <Briefcase className="w-6 h-6 text-indigo-500" />
-                <h3 className="text-2xl font-bold text-gray-900">Professional Portfolio</h3>
-              </div>
-              <button className="px-6 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition">
-                Add Portfolio Item
+              {/* Edit Button */}
+              <button className="px-4 py-2 bg-text-primary text-primary rounded-lg hover:bg-opacity-90 transition flex items-center gap-2 text-sm font-medium border border-text-primary flex-shrink-0 w-full sm:w-auto justify-center sm:justify-start">
+                <Settings className="w-4 h-4" />
+                <span>Edit</span>
               </button>
             </div>
             
-            {profileData?.portfolio && profileData.portfolio.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {profileData.portfolio.map((item: any, idx: number) => (
-                  <div key={idx} className="group relative rounded-xl overflow-hidden shadow-md hover:shadow-xl transition">
-                    <div className="aspect-square bg-gradient-to-br from-indigo-100 to-purple-100"></div>
-                    <div className="p-4">
-                      <h4 className="font-semibold text-gray-900 mb-1">{item.title}</h4>
-                      <p className="text-sm text-gray-600 line-clamp-2">{item.description}</p>
-                      <div className="mt-2">
-                        <span className="inline-block px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs font-medium">
-                          {item.category}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-16">
-                <Briefcase className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-600 mb-4">No portfolio items yet</p>
-                <button className="px-6 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition">
-                  Add Your First Project
-                </button>
-              </div>
+            {/* Bio */}
+            {profileData?.profile?.bio && (
+              <p className="text-text-secondary leading-relaxed text-sm mt-4 max-w-2xl">
+                {profileData.profile.bio}
+              </p>
             )}
           </div>
-        )}
+        </div>
 
-        {/* Skills & Certifications Tab */}
-        {activeTab === 'skills' && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Add Skill Form */}
-            <div className="bg-white rounded-2xl shadow-lg p-8">
-              <div className="flex items-center space-x-3 mb-6">
-                <Award className="w-6 h-6 text-purple-500" />
-                <h3 className="text-2xl font-bold text-gray-900">Add New Skill</h3>
-              </div>
-              
-              <form onSubmit={handleAddSkill} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Skill Name</label>
-                  <input
-                    type="text"
-                    name="skillName"
-                    placeholder="e.g., Pottery, Woodworking, Weaving"
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Proficiency Level</label>
-                  <select
-                    name="skillLevel"
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    required
-                  >
-                    <option value="Beginner">Beginner</option>
-                    <option value="Intermediate">Intermediate</option>
-                    <option value="Advanced">Advanced</option>
-                    <option value="Expert">Expert</option>
-                    <option value="Master">Master</option>
-                  </select>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Years Practiced</label>
-                  <input
-                    type="number"
-                    name="skillYears"
-                    min="0"
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    required
-                  />
-                </div>
-                
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    name="isPrimary"
-                    id="isPrimary"
-                    className="w-4 h-4 text-purple-500 rounded focus:ring-2 focus:ring-purple-500"
-                  />
-                  <label htmlFor="isPrimary" className="ml-2 text-sm text-gray-700">
-                    Mark as primary skill
-                  </label>
-                </div>
-                
+        {/* Tab Navigation - Sticky */}
+        <div className="bg-primary border-b border-border sticky top-20 sm:top-28 md:top-32 z-30">
+          <div className="max-w-6xl mx-auto px-4">
+            <div className="flex overflow-x-auto gap-1 -mx-4 px-4 sm:gap-2 sm:mx-0 sm:px-0">
+              {tabs.map((tab) => (
                 <button
-                  type="submit"
-                  disabled={processing}
-                  className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50"
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center gap-2 px-3 sm:px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-all ${
+                    activeTab === tab.id
+                      ? 'border-accent text-text-primary'
+                      : 'border-transparent text-text-secondary hover:text-text-primary'
+                  }`}
                 >
-                  {processing ? 'Adding...' : 'Add Skill'}
+                  <tab.icon className="w-4 h-4" />
+                  <span className="hidden sm:inline">{tab.label}</span>
+                  <span className="sm:hidden text-xs">{tab.label.split(' ')[0]}</span>
                 </button>
-              </form>
+              ))}
             </div>
+          </div>
+        </div>
 
-            {/* Skills List */}
-            <div className="bg-white rounded-2xl shadow-lg p-8">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">Your Skills</h3>
-              
-              {profileData?.skills && profileData.skills.length > 0 ? (
-                <div className="space-y-3">
-                  {profileData.skills.map((skill: any, idx: number) => (
-                    <div key={idx} className="p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-100">
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-semibold text-gray-900">{skill.skill_name}</h4>
-                        {skill.is_primary && (
-                          <span className="px-2 py-1 bg-purple-500 text-white rounded-full text-xs font-medium">
-                            Primary
-                          </span>
+        {/* Content Grid */}
+        <div className="max-w-6xl mx-auto">
+          {activeTab === 'products' && (
+            <div className="px-4 py-8">
+              <div className="flex justify-end mb-6">
+                <button
+                  onClick={() => setShowAddProduct(true)}
+                  className="px-4 py-2 bg-accent text-text-primary rounded-lg hover:opacity-90 transition flex items-center gap-2 text-sm font-medium border border-accent"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Add Product</span>
+                </button>
+              </div>
+
+              {products.length === 0 ? (
+                <div className="text-center py-16 bg-secondary rounded-lg border border-border">
+                  <Briefcase className="w-12 h-12 text-text-tertiary mx-auto mb-4 opacity-50" />
+                  <p className="text-text-secondary mb-4">No products yet</p>
+                  <button
+                    onClick={() => setShowAddProduct(true)}
+                    className="px-4 py-2 bg-text-primary text-primary rounded-lg hover:opacity-90 transition text-sm font-medium border border-text-primary inline-flex items-center gap-2"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Add Your First Product
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pb-20">
+                  {products.map((product: any) => (
+                    <div key={product.id} className="bg-primary rounded-lg border border-border overflow-hidden group hover:border-accent transition">
+                      <div className="aspect-square relative bg-secondary overflow-hidden">
+                        {product.primary_image_url ? (
+                          <img 
+                            src={product.primary_image_url} 
+                            alt={product.name}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <Briefcase className="w-8 h-8 text-text-tertiary opacity-50" />
+                          </div>
+                        )}
+                        <div className="absolute inset-0 bg-text-primary/0 group-hover:bg-text-primary/40 transition-all duration-200 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
+                          <button
+                            onClick={() => handlePostToMarket(product)}
+                            disabled={postingToMarket === product.id || product.posted_to_market}
+                            className="p-2 bg-accent text-text-primary rounded-lg hover:opacity-90 transition disabled:opacity-50"
+                            title={product.posted_to_market ? 'Posted to market' : 'Post to market'}
+                          >
+                            <Share2 className="w-5 h-5" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteProduct(product.id)}
+                            disabled={deletingProduct === product.id}
+                            className="p-2 bg-red-500 text-white rounded-lg hover:opacity-90 transition disabled:opacity-50"
+                          >
+                            <Trash2 className="w-5 h-5" />
+                          </button>
+                        </div>
+                        {product.posted_to_market && (
+                          <div className="absolute top-2 right-2 px-2 py-1 bg-accent text-text-primary rounded text-xs font-semibold">
+                            Posted
+                          </div>
                         )}
                       </div>
-                      <div className="flex items-center justify-between text-sm text-gray-600">
-                        <span>{skill.proficiency_level}</span>
-                        <span>{skill.years_practiced} years</span>
+                      <div className="p-4">
+                        <h3 className="font-semibold text-text-primary text-sm truncate">{product.name}</h3>
+                        <p className="text-accent font-bold text-sm mt-1">${product.price.toFixed(2)}</p>
+                        <p className="text-text-tertiary text-xs mt-2">{product.category}</p>
+                        <div className="mt-3 flex items-center justify-between text-xs text-text-tertiary">
+                          <span>{product.stock_quantity} in stock</span>
+                          <span className="flex items-center gap-1">
+                            <Eye className="w-3 h-3" />
+                            {product.views || 0}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   ))}
                 </div>
-              ) : (
-                <div className="text-center py-8">
-                  <Award className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                  <p className="text-gray-600">No skills added yet</p>
-                </div>
               )}
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Workshops Tab */}
-        {activeTab === 'workshops' && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Create Workshop Form */}
-            <div className="bg-white rounded-2xl shadow-lg p-8">
-              <div className="flex items-center space-x-3 mb-6">
-                <Calendar className="w-6 h-6 text-indigo-500" />
-                <h3 className="text-2xl font-bold text-gray-900">Create Workshop</h3>
+          {activeTab === 'skills' && (
+            <div className="px-4 py-8">
+              <div className="flex items-center gap-3 mb-6">
+                <Award className="w-6 h-6 text-accent flex-shrink-0" />
+                <h3 className="text-2xl font-bold text-text-primary">Skills & Hobbies</h3>
               </div>
               
-              <form onSubmit={handleCreateWorkshop} className="space-y-4">
+              <div className="space-y-6 bg-secondary rounded-lg border border-border p-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Workshop Title</label>
-                  <input
-                    type="text"
-                    name="workshopTitle"
-                    placeholder="e.g., Introduction to Pottery"
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
-                  <textarea
-                    name="workshopDescription"
-                    rows={3}
-                    placeholder="What will participants learn?"
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
-                    required
-                  />
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Duration (minutes)</label>
-                    <input
-                      type="number"
-                      name="duration"
-                      min="15"
-                      step="15"
-                      placeholder="120"
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                      required
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Max Participants</label>
-                    <input
-                      type="number"
-                      name="maxParticipants"
-                      min="1"
-                      placeholder="10"
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                      required
-                    />
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Price ($)</label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      name="price"
-                      placeholder="0.00"
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                      required
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Skill Level</label>
-                    <select
-                      name="skillLevel"
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                      required
-                    >
-                      <option value="Beginner">Beginner</option>
-                      <option value="Intermediate">Intermediate</option>
-                      <option value="Advanced">Advanced</option>
-                    </select>
-                  </div>
-                </div>
-                
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    name="materialsIncluded"
-                    id="materialsIncluded"
-                    className="w-4 h-4 text-indigo-500 rounded focus:ring-2 focus:ring-indigo-500"
-                  />
-                  <label htmlFor="materialsIncluded" className="ml-2 text-sm text-gray-700">
-                    Materials included in price
-                  </label>
-                </div>
-                
-                <button
-                  type="submit"
-                  disabled={processing}
-                  className="w-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50"
-                >
-                  {processing ? 'Creating...' : 'Create Workshop'}
-                </button>
-              </form>
-            </div>
-
-            {/* Workshop Info */}
-            <div className="bg-white rounded-2xl shadow-lg p-8">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">Workshop Benefits</h3>
-              
-              <div className="space-y-4">
-                <div className="flex items-start space-x-3 p-4 bg-blue-50 rounded-xl">
-                  <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Calendar className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-gray-900 mb-1">Share Your Expertise</h4>
-                    <p className="text-sm text-gray-600">Teach others your craft and build your reputation</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start space-x-3 p-4 bg-purple-50 rounded-xl">
-                  <div className="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Star className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-gray-900 mb-1">Additional Revenue</h4>
-                    <p className="text-sm text-gray-600">Generate income through interactive experiences</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start space-x-3 p-4 bg-pink-50 rounded-xl">
-                  <div className="w-8 h-8 bg-pink-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <MessageSquare className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-gray-900 mb-1">Build Community</h4>
-                    <p className="text-sm text-gray-600">Connect with enthusiasts and potential customers</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Reviews Tab */}
-        {activeTab === 'reviews' && (
-          <div className="bg-white rounded-2xl shadow-lg p-8">
-            <div className="flex items-center space-x-3 mb-6">
-              <Star className="w-6 h-6 text-yellow-500" />
-              <h3 className="text-2xl font-bold text-gray-900">Customer Reviews</h3>
-            </div>
-            
-            {/* Review Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              <div className="text-center p-6 bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl border border-yellow-200">
-                <div className="flex items-center justify-center space-x-2 mb-2">
-                  <Star className="w-8 h-8 text-yellow-500 fill-yellow-500" />
-                  <span className="text-4xl font-bold text-gray-900">4.9</span>
-                </div>
-                <p className="text-gray-600">Average Rating</p>
-                <p className="text-sm text-gray-500 mt-1">Based on 247 reviews</p>
-              </div>
-              
-              <div className="text-center p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border border-green-200">
-                <p className="text-4xl font-bold text-gray-900 mb-2">96%</p>
-                <p className="text-gray-600">Positive Reviews</p>
-                <p className="text-sm text-gray-500 mt-1">4.0+ star ratings</p>
-              </div>
-              
-              <div className="text-center p-6 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl border border-blue-200">
-                <p className="text-4xl font-bold text-gray-900 mb-2">24h</p>
-                <p className="text-gray-600">Response Time</p>
-                <p className="text-sm text-gray-500 mt-1">Average reply time</p>
-              </div>
-            </div>
-            
-            {/* Recent Reviews */}
-            <div className="space-y-4">
-              {[
-                { name: 'Sarah M.', rating: 5, text: 'Absolutely beautiful craftsmanship! The attention to detail is incredible.', date: '2 days ago' },
-                { name: 'James K.', rating: 5, text: 'Fast shipping and excellent quality. Will definitely order again!', date: '1 week ago' },
-                { name: 'Emily R.', rating: 4, text: 'Great product, exactly as described. Very happy with my purchase.', date: '2 weeks ago' },
-              ].map((review, idx) => (
-                <div key={idx} className="p-6 bg-gray-50 rounded-xl border border-gray-200">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-indigo-400 to-purple-400 rounded-full flex items-center justify-center text-white font-semibold">
-                        {review.name.charAt(0)}
-                      </div>
-                      <div>
-                        <p className="font-semibold text-gray-900">{review.name}</p>
-                        <p className="text-sm text-gray-500">{review.date}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-1">
-                      {[...Array(review.rating)].map((_, i) => (
-                        <Star key={i} className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                  <h4 className="font-semibold text-text-primary mb-3">Craft Skills</h4>
+                  {(profileData?.skills || []).length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {(profileData?.skills || []).map((skill: string, idx: number) => (
+                        <span key={idx} className="px-3 py-1 bg-primary text-accent rounded-full text-sm font-medium border border-border">
+                          {skill}
+                        </span>
                       ))}
                     </div>
-                  </div>
-                  <p className="text-gray-700">{review.text}</p>
+                  ) : (
+                    <p className="text-text-tertiary text-sm">No skills added yet</p>
+                  )}
                 </div>
-              ))}
+                
+                <div>
+                  <h4 className="font-semibold text-text-primary mb-3">Hobbies & Interests</h4>
+                  {(profileData?.hobbies || []).length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {(profileData?.hobbies || []).map((hobby: string, idx: number) => (
+                        <span key={idx} className="px-3 py-1 bg-primary text-accent rounded-full text-sm font-medium border border-border">
+                          {hobby}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-text-tertiary text-sm">No hobbies added yet</p>
+                  )}
+                </div>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Results Display */}
-        {results && (
-          <div className="mt-8 bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900 mb-3">Response</h3>
-            <pre className="bg-gray-50 p-4 rounded-lg overflow-x-auto text-sm">
-              {JSON.stringify(results, null, 2)}
-            </pre>
+          {activeTab === 'reviews' && (
+            <div className="px-4 py-8">
+              <div className="flex items-center gap-3 mb-6">
+                <Star className="w-6 h-6 text-accent flex-shrink-0" />
+                <h3 className="text-2xl font-bold text-text-primary">Reviews & Ratings</h3>
+              </div>
+              
+              <div className="grid grid-cols-1 gap-4">
+                {(profileData?.reviews || [
+                  { name: 'James K.', rating: 5, text: 'Fast shipping and excellent quality. Will definitely order again!', date: '1 week ago' },
+                  { name: 'Emily R.', rating: 4, text: 'Great product, exactly as described. Very happy with my purchase.', date: '2 weeks ago' },
+                ]).map((review: any, idx: number) => (
+                  <div key={idx} className="p-6 bg-secondary rounded-lg border border-border">
+                    <div className="flex items-center justify-between gap-2 mb-3 flex-wrap">
+                      <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-accent rounded-full flex items-center justify-center text-text-primary font-semibold flex-shrink-0">
+                          {review.name.charAt(0)}
+                        </div>
+                        <div>
+                          <p className="font-semibold text-text-primary">{review.name}</p>
+                          <p className="text-sm text-text-tertiary">{review.date}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        {[...Array(review.rating)].map((_, i) => (
+                          <Star key={i} className="w-4 h-4 text-accent fill-accent" />
+                        ))}
+                      </div>
+                    </div>
+                    <p className="text-text-secondary text-sm mt-3">{review.text}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'overview' && (
+            <div className="px-4 py-8">
+              <div className="flex items-center gap-3 mb-6">
+                <User className="w-6 h-6 text-accent flex-shrink-0" />
+                <h3 className="text-2xl font-bold text-text-primary">Profile Overview</h3>
+              </div>
+
+              <form onSubmit={handleProfileUpdate} className="space-y-6 bg-secondary rounded-lg border border-border p-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-text-primary mb-2">Display Name</label>
+                    <input
+                      type="text"
+                      name="display_name"
+                      defaultValue={profileData?.profile?.display_name}
+                      className="w-full px-4 py-2.5 border border-border rounded-lg bg-primary focus:ring-2 focus:ring-accent focus:border-transparent text-text-primary placeholder-text-tertiary"
+                      placeholder="Your display name"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-text-primary mb-2">Location</label>
+                    <input
+                      type="text"
+                      name="location"
+                      defaultValue={profileData?.profile?.location}
+                      className="w-full px-4 py-2.5 border border-border rounded-lg bg-primary focus:ring-2 focus:ring-accent focus:border-transparent text-text-primary placeholder-text-tertiary"
+                      placeholder="City, Country"
+                    />
+                  </div>
+                  
+                  <div className="sm:col-span-2">
+                    <label className="block text-sm font-medium text-text-primary mb-2">Bio</label>
+                    <textarea
+                      name="bio"
+                      rows={4}
+                      defaultValue={profileData?.profile?.bio}
+                      className="w-full px-4 py-2.5 border border-border rounded-lg bg-primary focus:ring-2 focus:ring-accent focus:border-transparent resize-none text-text-primary placeholder-text-tertiary"
+                      placeholder="Tell us about yourself and your craft..."
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end">
+                  <button
+                    type="submit"
+                    disabled={processing}
+                    className="px-6 py-2 bg-text-primary text-primary rounded-lg font-medium hover:opacity-90 transition disabled:opacity-50 border border-text-primary"
+                  >
+                    {processing ? 'Saving...' : 'Save Changes'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
+        </div>
+
+        {/* Add Product Modal */}
+        {showAddProduct && (
+          <div className="fixed inset-0 bg-text-primary/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-primary rounded-lg border border-border max-w-md w-full p-6 sm:p-8">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl sm:text-2xl font-bold text-text-primary">Add Product</h2>
+                <button
+                  onClick={() => setShowAddProduct(false)}
+                  className="p-1 hover:bg-secondary rounded transition"
+                >
+                  <X className="w-5 h-5 text-text-secondary" />
+                </button>
+              </div>
+
+              <form onSubmit={handleAddProduct} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-text-primary mb-2">Product Name</label>
+                  <input
+                    type="text"
+                    value={newProduct.name}
+                    onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
+                    required
+                    className="w-full px-3 py-2 border border-border rounded-lg bg-secondary focus:ring-2 focus:ring-accent focus:border-transparent text-text-primary text-sm placeholder-text-tertiary"
+                    placeholder="Enter product name"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-text-primary mb-2">Description</label>
+                  <textarea
+                    value={newProduct.description}
+                    onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
+                    required
+                    rows={3}
+                    className="w-full px-3 py-2 border border-border rounded-lg bg-secondary focus:ring-2 focus:ring-accent focus:border-transparent text-text-primary text-sm resize-none placeholder-text-tertiary"
+                    placeholder="Describe your product"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-text-primary mb-2">Category</label>
+                  <select
+                    value={newProduct.category}
+                    onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}
+                    required
+                    className="w-full px-3 py-2 border border-border rounded-lg bg-secondary focus:ring-2 focus:ring-accent focus:border-transparent text-text-primary text-sm"
+                  >
+                    <option value="">Select category</option>
+                    <option value="Textiles">Textiles</option>
+                    <option value="Pottery">Pottery</option>
+                    <option value="Jewelry">Jewelry</option>
+                    <option value="Woodwork">Woodwork</option>
+                    <option value="Metalwork">Metalwork</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-text-primary mb-2">Price</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={newProduct.price}
+                    onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
+                    required
+                    className="w-full px-3 py-2 border border-border rounded-lg bg-secondary focus:ring-2 focus:ring-accent focus:border-transparent text-text-primary text-sm placeholder-text-tertiary"
+                    placeholder="0.00"
+                  />
+                </div>
+
+                <div className="flex gap-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowAddProduct(false)}
+                    className="flex-1 px-4 py-2 border border-border rounded-lg text-text-primary hover:bg-secondary transition font-medium text-sm"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={processing}
+                    className="flex-1 px-4 py-2 bg-accent text-text-primary rounded-lg hover:opacity-90 transition disabled:opacity-50 font-medium text-sm border border-accent"
+                  >
+                    {processing ? 'Adding...' : 'Add Product'}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         )}
       </div>

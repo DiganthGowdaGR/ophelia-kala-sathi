@@ -1,0 +1,24 @@
+{
+  "nav": {
+    "marketplace": "માર્કેટપ્લેસ",
+    "findArtisans": "કારીગરો શોધો",
+    "dashboard": "ડેશબોર્ડ",
+    "creativeStudio": "સર્જનશીલ સ્ટુડિયો",
+    "agentMode": "એજન્ટ મોડ",
+    "socialPosting": "સોશ્યલ પોસ્ટિંગ મનીટરીંગ",
+    "cart": "કાર્ટ",
+    "profile": "પ્રોફાઇલ",
+    "logout": "લૉગ આઉટ",
+    "login": "લૉગ ઇન",
+    "signUp": "સાઇન અપ",
+    "notifications": "સૂચનાઓ",
+    "selectLanguage": "ભાષા પસંદ કરો"
+  },
+  "common": {
+    "search": "શોધો",
+    "filter": "ફિલ્ટર",
+    "loading": "લોડ થઇ રહ્યું છે...",
+    "error": "ભૂલ",
+    "success": "સફળ"
+  }
+}

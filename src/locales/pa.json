@@ -1,0 +1,24 @@
+{
+  "nav": {
+    "marketplace": "ਮਾਰਕੇਟਪਲੇਸ",
+    "findArtisans": "ਕਾਰੀਗਰਾਂ ਨੂੰ ਖੋਜੋ",
+    "dashboard": "ਡੈਸ਼ਬੋਰਡ",
+    "creativeStudio": "ਸਰਜਨਾਤਮਕ ਸਟੂਡੀਓ",
+    "agentMode": "ਏਜੰਟ ਮੋਡ",
+    "socialPosting": "ਸੋਸ਼ਲ ਪੋਸਟਿੰਗ ਨਿਰੀਖਣ",
+    "cart": "ਕਾਰਟ",
+    "profile": "ਪ੍ਰੋਫਾਈਲ",
+    "logout": "ਲਾਗ ਆਊਟ",
+    "login": "ਲਾਗ ਇਨ",
+    "signUp": "ਸਾਈਨ ਅਪ",
+    "notifications": "ਸੂਚਨਾਵਾਂ",
+    "selectLanguage": "ਭਾਸ਼ਾ ਚੁਣੋ"
+  },
+  "common": {
+    "search": "ਖੋਜੋ",
+    "filter": "ਫਿਲਟਰ",
+    "loading": "ਲੋਡ ਹੋ ਰਿਹਾ ਹੈ...",
+    "error": "ਗਲਤੀ",
+    "success": "ਸਫਲ"
+  }
+}

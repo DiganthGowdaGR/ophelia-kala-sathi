@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import Navigation from '@/components/shared/Navigation';
-import { Mail, Lock, User } from 'lucide-react';
+import { Mail, Lock, User, Chrome } from 'lucide-react';
 
 export default function SignUpPage() {
   const [email, setEmail] = useState('');
@@ -11,7 +11,8 @@ export default function SignUpPage() {
   const [role, setRole] = useState<'artisan' | 'customer'>('customer');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signUp } = useAuth();
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const { signUp, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
 
   async function handleSubmit(e: React.FormEvent) {
@@ -35,6 +36,18 @@ export default function SignUpPage() {
       setError(err.message || 'Failed to create account');
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleGoogleSignUp() {
+    setError('');
+    setGoogleLoading(true);
+
+    try {
+      await signInWithGoogle();
+    } catch (err: any) {
+      setError(err.message || 'Failed to sign up with Google');
+      setGoogleLoading(false);
     }
   }
 
@@ -141,12 +154,33 @@ export default function SignUpPage() {
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || googleLoading}
               className="w-full bg-primary text-white py-3 rounded-lg font-semibold hover:bg-accent transition disabled:opacity-50 uppercase tracking-button"
             >
               {loading ? 'Creating account...' : 'Create Account'}
             </button>
           </form>
+
+          <div className="mt-6">
+            <div className="relative mb-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-border"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-background text-text-secondary">Or continue with</span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              disabled={loading || googleLoading}
+              onClick={handleGoogleSignUp}
+              className="w-full flex items-center justify-center space-x-2 border border-border text-text-primary py-3 rounded-lg font-semibold hover:bg-secondary transition disabled:opacity-50"
+            >
+              <Chrome className="w-5 h-5" />
+              <span>{googleLoading ? 'Creating account...' : 'Sign up with Google'}</span>
+            </button>
+          </div>
 
           <div className="mt-6 text-center">
             <p className="text-text-secondary">

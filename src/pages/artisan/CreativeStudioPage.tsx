@@ -1,15 +1,12 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
+import { generateProductDescription, generateContent, generateChatResponse } from '@/services/geminiService';
 import Navigation from '@/components/shared/Navigation';
-import AIInventoryManager from '@/components/artisan/AIInventoryManager';
-import AIMarketAnalyzer from '@/components/artisan/AIMarketAnalyzer';
-import AICustomerInsights from '@/components/artisan/AICustomerInsights';
-import AIBusinessAdvisor from '@/components/artisan/AIBusinessAdvisor';
 import AIProductDescriptionGenerator from '@/components/artisan/AIProductDescriptionGenerator';
-import { 
-  Video, Image, Sparkles, Package, TrendingUp, Users, 
-  Brain, BookOpen, X, ChevronRight, FileText, BarChart3, 
+import {
+  Video, Image, Sparkles, Package, TrendingUp, Users,
+  Brain, BookOpen, X, ChevronRight, FileText, BarChart3,
   TrendingUp as Trending, Share2, Mic
 } from 'lucide-react';
 
@@ -48,76 +45,12 @@ const AI_FEATURES: AIFeature[] = [
     gradient: 'from-pink-500 to-pink-600'
   },
   {
-    id: 'inventory',
-    title: 'AI Inventory Manager',
-    description: 'Optimize stock levels with AI predictions',
-    icon: Package,
-    color: 'bg-blue-100',
-    gradient: 'from-blue-500 to-blue-600'
-  },
-  {
-    id: 'market',
-    title: 'Market Analysis',
-    description: 'Analyze market trends and find opportunities',
-    icon: TrendingUp,
-    color: 'bg-green-100',
-    gradient: 'from-green-500 to-green-600'
-  },
-  {
-    id: 'insights',
-    title: 'Customer Insights',
-    description: 'Understand your customers with AI insights',
-    icon: Users,
-    color: 'bg-orange-100',
-    gradient: 'from-orange-500 to-orange-600'
-  },
-  {
-    id: 'advisor',
-    title: 'Business Advisor',
-    description: 'Get AI-powered business recommendations',
-    icon: Brain,
-    color: 'bg-cyan-100',
-    gradient: 'from-cyan-500 to-cyan-600'
-  },
-  {
     id: 'content',
     title: 'AI Content Generator',
     description: 'Create product descriptions & marketing copy instantly',
     icon: FileText,
     color: 'bg-rose-100',
     gradient: 'from-rose-500 to-rose-600'
-  },
-  {
-    id: 'intelligence',
-    title: 'Business Intelligence',
-    description: 'Get AI insights on market trends and opportunities',
-    icon: BarChart3,
-    color: 'bg-amber-100',
-    gradient: 'from-amber-500 to-amber-600'
-  },
-  {
-    id: 'simulation',
-    title: 'Market Simulation',
-    description: 'Predict trends and optimize pricing strategies',
-    icon: Trending,
-    color: 'bg-teal-100',
-    gradient: 'from-teal-500 to-teal-600'
-  },
-  {
-    id: 'social',
-    title: 'Social Distribution',
-    description: 'Post to multiple platforms instantly',
-    icon: Share2,
-    color: 'bg-sky-100',
-    gradient: 'from-sky-500 to-sky-600'
-  },
-  {
-    id: 'voice',
-    title: 'Voice Business Mentor',
-    description: 'Get personalized coaching via voice AI',
-    icon: Mic,
-    color: 'bg-violet-100',
-    gradient: 'from-violet-500 to-violet-600'
   }
 ];
 
@@ -135,24 +68,8 @@ export default function CreativeStudioPage() {
         return <ImagenImageGenerator />;
       case 'description':
         return <AIProductDescriptionGenerator />;
-      case 'inventory':
-        return <AIInventoryManager products={products} />;
-      case 'market':
-        return <AIMarketAnalyzer />;
-      case 'insights':
-        return <AICustomerInsights />;
-      case 'advisor':
-        return <AIBusinessAdvisor />;
       case 'content':
         return <AIContentGenerator />;
-      case 'intelligence':
-        return <BusinessIntelligence />;
-      case 'simulation':
-        return <MarketSimulation />;
-      case 'social':
-        return <SocialDistribution />;
-      case 'voice':
-        return <VoiceBusinessMentor />;
       default:
         return null;
     }
@@ -250,18 +167,34 @@ function VEOVideoGenerator() {
   async function generateVideo() {
     setGenerating(true);
     try {
-      const { data, error } = await supabase.functions.invoke('creative-studio-veo', {
-        body: {
-          prompt: veoForm.prompt,
-          videoType: veoForm.videoType,
-          productInfo: { name: veoForm.productName },
-          artisanId: user?.id
-        }
-      });
+      // Import the function dynamically to avoid circular imports
+      const { generateVideoDescription } = await import('@/services/geminiService');
+      
+      const videoData = {
+        productName: veoForm.productName,
+        videoType: veoForm.videoType,
+        prompt: veoForm.prompt
+      };
 
-      if (error) throw error;
-      setResult(data.data);
+      const videoResult = await generateVideoDescription(videoData);
+      setResult({
+        video: {
+          videoUrl: null, // Real video generation not available
+          description: videoResult.description,
+          shotList: videoResult.shotList,
+          duration: videoResult.technicalSpecs.duration,
+          resolution: videoResult.technicalSpecs.resolution,
+          format: 'Video Description',
+          note: 'Generated detailed video production description - perfect for creating professional videos'
+        },
+        prompt: veoForm.prompt,
+        videoType: veoForm.videoType,
+        productInfo: { name: veoForm.productName },
+        artisanId: user?.id,
+        createdAt: new Date().toISOString()
+      });
     } catch (error: any) {
+      console.error('Generation failed:', error);
       alert('Generation failed: ' + error.message);
     } finally {
       setGenerating(false);
@@ -333,11 +266,27 @@ function VEOVideoGenerator() {
 
       {result && (
         <div className="bg-gray-50 rounded-xl border border-gray-200 p-8">
-          <h3 className="text-xl font-bold text-gray-900 mb-6">Generated Video</h3>
+          <h3 className="text-xl font-bold text-gray-900 mb-6">Generated Video Production Guide</h3>
           <div className="space-y-4">
-            <div className="aspect-video bg-gray-200 rounded-lg border border-gray-300 flex items-center justify-center">
-              <Video className="w-16 h-16 text-gray-400" />
+            <div className="bg-white border border-gray-200 rounded-lg p-6">
+              <div className="flex items-center space-x-3 mb-3">
+                <Video className="w-6 h-6 text-purple-600" />
+                <span className="font-semibold text-gray-900">Production Description</span>
+              </div>
+              <p className="text-gray-700 whitespace-pre-wrap text-sm">{result.video?.description}</p>
             </div>
+            
+            {result.video?.shotList && (
+              <div className="bg-white border border-gray-200 rounded-lg p-6">
+                <span className="font-semibold text-gray-900 mb-3 block">Recommended Shots:</span>
+                <ul className="list-disc list-inside space-y-1 text-sm text-gray-600">
+                  {result.video.shotList.map((shot: string, index: number) => (
+                    <li key={index}>{shot}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div className="bg-white border border-gray-200 rounded-lg p-4">
                 <span className="font-semibold text-gray-900">Duration:</span>
@@ -347,6 +296,10 @@ function VEOVideoGenerator() {
                 <span className="font-semibold text-gray-900">Resolution:</span>
                 <p className="text-gray-600">{result.video?.resolution}</p>
               </div>
+            </div>
+            
+            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+              <p className="text-purple-800 text-sm font-medium">💡 Pro Tip: {result.video?.note}</p>
             </div>
           </div>
         </div>
@@ -370,18 +323,35 @@ function ImagenImageGenerator() {
   async function generateImage() {
     setGenerating(true);
     try {
-      const { data, error } = await supabase.functions.invoke('creative-studio-imagen', {
-        body: {
-          prompt: imagenForm.prompt,
-          imageType: imagenForm.imageType,
-          style: imagenForm.style,
-          artisanId: user?.id
-        }
-      });
+      // Import the function dynamically to avoid circular imports
+      const { generateImageDescription } = await import('@/services/geminiService');
+      
+      const imageData = {
+        productName: 'Custom Product', // Using generic name since prompt contains details
+        imageType: imagenForm.imageType,
+        style: imagenForm.style,
+        prompt: imagenForm.prompt
+      };
 
-      if (error) throw error;
-      setResult(data.data);
+      const imageResult = await generateImageDescription(imageData);
+      setResult({
+        image: {
+          imageUrl: null, // Real image generation not available via standard API
+          description: imageResult.description,
+          prompt: imageResult.prompt,
+          dimensions: imageResult.technicalSpecs.dimensions,
+          format: imageResult.technicalSpecs.format,
+          aspectRatio: imageResult.technicalSpecs.aspectRatio,
+          note: 'Generated detailed image generation prompt - perfect for creating professional images'
+        },
+        prompt: imagenForm.prompt,
+        imageType: imagenForm.imageType,
+        style: imagenForm.style,
+        artisanId: user?.id,
+        createdAt: new Date().toISOString()
+      });
     } catch (error: any) {
+      console.error('Generation failed:', error);
       alert('Generation failed: ' + error.message);
     } finally {
       setGenerating(false);
@@ -456,20 +426,37 @@ function ImagenImageGenerator() {
 
       {result && (
         <div className="bg-gray-50 rounded-xl border border-gray-200 p-8">
-          <h3 className="text-xl font-bold text-gray-900 mb-6">Generated Image</h3>
+          <h3 className="text-xl font-bold text-gray-900 mb-6">Generated Image Creation Guide</h3>
           <div className="space-y-4">
-            <div className="aspect-square bg-gray-200 rounded-lg border border-gray-300 flex items-center justify-center">
-              <Image className="w-16 h-16 text-gray-400" />
+            <div className="bg-white border border-gray-200 rounded-lg p-6">
+              <div className="flex items-center space-x-3 mb-3">
+                <Image className="w-6 h-6 text-indigo-600" />
+                <span className="font-semibold text-gray-900">Image Generation Prompt</span>
+              </div>
+              <p className="text-gray-700 whitespace-pre-wrap text-sm font-mono bg-gray-50 p-3 rounded">{result.image?.prompt}</p>
             </div>
+            
+            <div className="bg-white border border-gray-200 rounded-lg p-6">
+              <div className="flex items-center space-x-3 mb-3">
+                <Image className="w-6 h-6 text-indigo-600" />
+                <span className="font-semibold text-gray-900">Production Guide</span>
+              </div>
+              <p className="text-gray-700 whitespace-pre-wrap text-sm">{result.image?.description}</p>
+            </div>
+            
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div className="bg-white border border-gray-200 rounded-lg p-4">
-                <span className="font-semibold text-gray-900">Width:</span>
-                <p className="text-gray-600">{result.image?.dimensions.width}px</p>
+                <span className="font-semibold text-gray-900">Dimensions:</span>
+                <p className="text-gray-600">{result.image?.dimensions.width} × {result.image?.dimensions.height}px</p>
               </div>
               <div className="bg-white border border-gray-200 rounded-lg p-4">
-                <span className="font-semibold text-gray-900">Height:</span>
-                <p className="text-gray-600">{result.image?.dimensions.height}px</p>
+                <span className="font-semibold text-gray-900">Aspect Ratio:</span>
+                <p className="text-gray-600">{result.image?.aspectRatio}</p>
               </div>
+            </div>
+            
+            <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
+              <p className="text-indigo-800 text-sm font-medium">💡 Pro Tip: {result.image?.note}</p>
             </div>
           </div>
         </div>
@@ -494,19 +481,28 @@ function AIContentGenerator() {
   async function generateContent() {
     setGenerating(true);
     try {
-      const { data, error } = await supabase.functions.invoke('ai-content-generator', {
-        body: {
-          productName: contentForm.productName,
-          productType: contentForm.productType,
-          tone: contentForm.tone,
-          contentType: contentForm.contentType,
-          artisanId: user?.id
-        }
-      });
+      // Import the function dynamically to avoid circular imports
+      const { generateContent } = await import('@/services/geminiService');
+      
+      const contentData = {
+        productName: contentForm.productName,
+        productType: contentForm.productType,
+        tone: contentForm.tone,
+        contentType: contentForm.contentType
+      };
 
-      if (error) throw error;
-      setResult(data.data);
+      const content = await generateContent(contentData);
+      setResult({
+        content,
+        productName: contentForm.productName,
+        productType: contentForm.productType,
+        tone: contentForm.tone,
+        contentType: contentForm.contentType,
+        artisanId: user?.id,
+        createdAt: new Date().toISOString()
+      });
     } catch (error: any) {
+      console.error('Generation failed:', error);
       alert('Generation failed: ' + error.message);
     } finally {
       setGenerating(false);
@@ -603,361 +599,5 @@ function AIContentGenerator() {
   );
 }
 
-// Business Intelligence Component
-function BusinessIntelligence() {
-  const [analyzing, setAnalyzing] = useState(false);
-  const [result, setResult] = useState<any>(null);
-  const { user } = useAuth();
-
-  async function analyzeMarket() {
-    setAnalyzing(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('business-intelligence', {
-        body: { artisanId: user?.id }
-      });
-
-      if (error) throw error;
-      setResult(data.data);
-    } catch (error: any) {
-      alert('Analysis failed: ' + error.message);
-    } finally {
-      setAnalyzing(false);
-    }
-  }
-
-  return (
-    <div className="space-y-8">
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2 flex items-center space-x-2">
-          <BarChart3 className="w-6 h-6 text-amber-600" />
-          <span>Business Intelligence</span>
-        </h2>
-        <p className="text-gray-600">Get AI insights on market trends and business opportunities</p>
-      </div>
-
-      <div className="bg-white rounded-xl border border-gray-200 p-8 space-y-6">
-        <p className="text-gray-700">Analyze your market performance and get actionable insights powered by AI.</p>
-        
-        <button
-          onClick={analyzeMarket}
-          disabled={analyzing}
-          className="w-full bg-gradient-to-r from-amber-600 to-amber-700 text-white px-6 py-4 rounded-lg font-semibold hover:from-amber-700 hover:to-amber-800 transition disabled:opacity-50 flex items-center justify-center space-x-2"
-        >
-          <BarChart3 className="w-5 h-5" />
-          <span>{analyzing ? 'Analyzing...' : 'Analyze Market Trends'}</span>
-        </button>
-      </div>
-
-      {result && (
-        <div className="space-y-6">
-          <div className="bg-gradient-to-br from-amber-50 to-amber-100 border border-amber-200 rounded-xl p-6">
-            <h3 className="text-lg font-bold text-amber-900 mb-4">Market Insights</h3>
-            <div className="space-y-3">
-              {result.insights?.map((insight: string, idx: number) => (
-                <div key={idx} className="flex items-start space-x-3">
-                  <div className="w-2 h-2 bg-amber-600 rounded-full mt-2 flex-shrink-0"></div>
-                  <p className="text-amber-900">{insight}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// Market Simulation Component
-function MarketSimulation() {
-  const [simulating, setSimulating] = useState(false);
-  const [result, setResult] = useState<any>(null);
-  const { user } = useAuth();
-
-  const [simForm, setSimForm] = useState({
-    basePrice: '',
-    marketCondition: 'stable'
-  });
-
-  async function simulateMarket() {
-    setSimulating(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('market-simulation', {
-        body: {
-          basePrice: parseFloat(simForm.basePrice),
-          marketCondition: simForm.marketCondition,
-          artisanId: user?.id
-        }
-      });
-
-      if (error) throw error;
-      setResult(data.data);
-    } catch (error: any) {
-      alert('Simulation failed: ' + error.message);
-    } finally {
-      setSimulating(false);
-    }
-  }
-
-  return (
-    <div className="space-y-8">
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2 flex items-center space-x-2">
-          <Trending className="w-6 h-6 text-teal-600" />
-          <span>Market Simulation</span>
-        </h2>
-        <p className="text-gray-600">Predict market trends and optimize your pricing strategy</p>
-      </div>
-
-      <div className="bg-white rounded-xl border border-gray-200 p-8 space-y-6">
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-semibold text-gray-900 mb-3">Base Price ($)</label>
-            <input
-              type="number"
-              value={simForm.basePrice}
-              onChange={(e) => setSimForm({ ...simForm, basePrice: e.target.value })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition"
-              placeholder="100.00"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-gray-900 mb-3">Market Condition</label>
-            <select
-              value={simForm.marketCondition}
-              onChange={(e) => setSimForm({ ...simForm, marketCondition: e.target.value })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition bg-white"
-            >
-              <option value="stable">Stable</option>
-              <option value="growing">Growing</option>
-              <option value="declining">Declining</option>
-              <option value="volatile">Volatile</option>
-            </select>
-          </div>
-        </div>
-
-        <button
-          onClick={simulateMarket}
-          disabled={simulating || !simForm.basePrice}
-          className="w-full bg-gradient-to-r from-teal-600 to-teal-700 text-white px-6 py-4 rounded-lg font-semibold hover:from-teal-700 hover:to-teal-800 transition disabled:opacity-50 flex items-center justify-center space-x-2"
-        >
-          <Sparkles className="w-5 h-5" />
-          <span>{simulating ? 'Simulating...' : 'Run Market Simulation'}</span>
-        </button>
-      </div>
-
-      {result && (
-        <div className="bg-gradient-to-br from-teal-50 to-teal-100 border border-teal-200 rounded-xl p-6">
-          <h3 className="text-lg font-bold text-teal-900 mb-4">Simulation Results</h3>
-          <div className="grid grid-cols-3 gap-4">
-            <div className="bg-white rounded-lg p-4 border border-teal-200">
-              <p className="text-sm text-teal-600 font-semibold">Optimal Price</p>
-              <p className="text-2xl font-bold text-teal-900">${result.optimalPrice?.toFixed(2)}</p>
-            </div>
-            <div className="bg-white rounded-lg p-4 border border-teal-200">
-              <p className="text-sm text-teal-600 font-semibold">Expected Revenue</p>
-              <p className="text-2xl font-bold text-teal-900">${result.expectedRevenue?.toFixed(2)}</p>
-            </div>
-            <div className="bg-white rounded-lg p-4 border border-teal-200">
-              <p className="text-sm text-teal-600 font-semibold">Margin Impact</p>
-              <p className="text-2xl font-bold text-teal-900">{result.marginImpact?.toFixed(1)}%</p>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// Social Distribution Component
-function SocialDistribution() {
-  const [distributing, setDistributing] = useState(false);
-  const [result, setResult] = useState<any>(null);
-  const { user } = useAuth();
-
-  const [platforms, setPlatforms] = useState({
-    instagram: false,
-    facebook: false,
-    twitter: false,
-    tiktok: false,
-    linkedin: false
-  });
-
-  const [content, setContent] = useState('');
-
-  async function distributeContent() {
-    setDistributing(true);
-    try {
-      const selectedPlatforms = Object.keys(platforms).filter(p => platforms[p as keyof typeof platforms]);
-      
-      const { data, error } = await supabase.functions.invoke('social-distribution', {
-        body: {
-          content,
-          platforms: selectedPlatforms,
-          artisanId: user?.id
-        }
-      });
-
-      if (error) throw error;
-      setResult(data.data);
-    } catch (error: any) {
-      alert('Distribution failed: ' + error.message);
-    } finally {
-      setDistributing(false);
-    }
-  }
-
-  return (
-    <div className="space-y-8">
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2 flex items-center space-x-2">
-          <Share2 className="w-6 h-6 text-sky-600" />
-          <span>Social Distribution</span>
-        </h2>
-        <p className="text-gray-600">Post your content to multiple social platforms instantly</p>
-      </div>
-
-      <div className="bg-white rounded-xl border border-gray-200 p-8 space-y-6">
-        <div>
-          <label className="block text-sm font-semibold text-gray-900 mb-4">Select Platforms</label>
-          <div className="grid grid-cols-2 gap-4">
-            {Object.entries(platforms).map(([platform, checked]) => (
-              <label key={platform} className="flex items-center space-x-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={checked}
-                  onChange={(e) => setPlatforms({ ...platforms, [platform]: e.target.checked })}
-                  className="w-4 h-4 rounded border-gray-300 text-sky-600"
-                />
-                <span className="text-gray-700 capitalize font-medium">{platform}</span>
-              </label>
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-semibold text-gray-900 mb-3">Content</label>
-          <textarea
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            rows={6}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent transition resize-none"
-            placeholder="Enter the content you want to share across platforms..."
-          />
-        </div>
-
-        <button
-          onClick={distributeContent}
-          disabled={distributing || !content}
-          className="w-full bg-gradient-to-r from-sky-600 to-sky-700 text-white px-6 py-4 rounded-lg font-semibold hover:from-sky-700 hover:to-sky-800 transition disabled:opacity-50 flex items-center justify-center space-x-2"
-        >
-          <Share2 className="w-5 h-5" />
-          <span>{distributing ? 'Distributing...' : 'Distribute Now'}</span>
-        </button>
-      </div>
-
-      {result && (
-        <div className="bg-gradient-to-br from-sky-50 to-sky-100 border border-sky-200 rounded-xl p-6">
-          <h3 className="text-lg font-bold text-sky-900 mb-4">Distribution Status</h3>
-          <div className="space-y-3">
-            {result.platforms?.map((platform: any, idx: number) => (
-              <div key={idx} className="flex items-center space-x-3 bg-white p-3 rounded-lg border border-sky-200">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-gray-900 capitalize font-medium">{platform.name}</span>
-                <span className="ml-auto text-sm text-gray-600">✓ Posted</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// Voice Business Mentor Component
-function VoiceBusinessMentor() {
-  const [mentoring, setMentoring] = useState(false);
-  const [result, setResult] = useState<any>(null);
-  const [isListening, setIsListening] = useState(false);
-  const { user } = useAuth();
-
-  const [question, setQuestion] = useState('');
-
-  async function getMentorAdvice() {
-    setMentoring(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('voice-mentor', {
-        body: {
-          question,
-          artisanId: user?.id
-        }
-      });
-
-      if (error) throw error;
-      setResult(data.data);
-    } catch (error: any) {
-      alert('Mentor request failed: ' + error.message);
-    } finally {
-      setMentoring(false);
-    }
-  }
-
-  return (
-    <div className="space-y-8">
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2 flex items-center space-x-2">
-          <Mic className="w-6 h-6 text-violet-600" />
-          <span>Voice Business Mentor</span>
-        </h2>
-        <p className="text-gray-600">Get personalized business coaching via AI-powered voice mentor</p>
-      </div>
-
-      <div className="bg-white rounded-xl border border-gray-200 p-8 space-y-6">
-        <div>
-          <label className="block text-sm font-semibold text-gray-900 mb-3">Your Question</label>
-          <textarea
-            value={question}
-            onChange={(e) => setQuestion(e.target.value)}
-            rows={5}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent transition resize-none"
-            placeholder="Ask your business mentor anything about growing your artisan business..."
-          />
-        </div>
-
-        <div className="flex space-x-3">
-          <button
-            onClick={getMentorAdvice}
-            disabled={mentoring || !question}
-            className="flex-1 bg-gradient-to-r from-violet-600 to-violet-700 text-white px-6 py-4 rounded-lg font-semibold hover:from-violet-700 hover:to-violet-800 transition disabled:opacity-50 flex items-center justify-center space-x-2"
-          >
-            <Sparkles className="w-5 h-5" />
-            <span>{mentoring ? 'Getting Advice...' : 'Get Mentor Advice'}</span>
-          </button>
-          <button
-            onClick={() => setIsListening(!isListening)}
-            className="bg-violet-100 text-violet-600 px-6 py-4 rounded-lg font-semibold hover:bg-violet-200 transition flex items-center justify-center space-x-2 border border-violet-300"
-          >
-            <Mic className="w-5 h-5" />
-            <span>{isListening ? 'Stop' : 'Voice'}</span>
-          </button>
-        </div>
-      </div>
-
-      {result && (
-        <div className="bg-gradient-to-br from-violet-50 to-violet-100 border border-violet-200 rounded-xl p-8">
-          <h3 className="text-lg font-bold text-violet-900 mb-4">Mentor Advice</h3>
-          <div className="bg-white rounded-lg p-6 border border-violet-200">
-            <p className="text-gray-700 leading-relaxed">{result.advice}</p>
-          </div>
-          {result.audioUrl && (
-            <div className="mt-6">
-              <p className="text-sm text-violet-900 font-semibold mb-3">Listen to Audio Response</p>
-              <audio controls className="w-full border border-violet-300 rounded-lg">
-                <source src={result.audioUrl} type="audio/mp3" />
-              </audio>
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
+// Removed Business Intelligence, Market Simulation, and Social Distribution components
+// Removed Voice Business Mentor - moved to Agent Mode

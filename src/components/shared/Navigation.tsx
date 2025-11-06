@@ -2,11 +2,13 @@ import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage, INDIAN_LANGUAGES } from '@/contexts/LanguageContext';
+import { useTranslation } from '@/hooks/useTranslation';
 import { ShoppingCart, User, LogOut, LayoutDashboard, MapPin, Search, Menu, X, Bell, Zap, ChevronDown, Globe } from 'lucide-react';
 
 export default function Navigation() {
   const { user, profile, signOut } = useAuth();
   const { language, setLanguage } = useLanguage();
+  const { t } = useTranslation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [agentModeOpen, setAgentModeOpen] = useState(false);
   const [languageOpen, setLanguageOpen] = useState(false);
@@ -36,14 +38,14 @@ export default function Navigation() {
                   to="/marketplace"
                   className="text-gray-600 hover:text-yellow-600 font-medium transition-colors link-underline"
                 >
-                  Marketplace
+                  {t('nav.marketplace')}
                 </Link>
                 <Link
                   to="/find-artisans"
                   className="flex items-center space-x-1 text-gray-600 hover:text-yellow-600 font-medium transition-colors link-underline"
                 >
                   <Search className="w-4 h-4" />
-                  <span>Find Artisans</span>
+                  <span>{t('nav.findArtisans')}</span>
                 </Link>
               </div>
             </div>
@@ -55,7 +57,7 @@ export default function Navigation() {
                 <button
                   onClick={() => setLanguageOpen(!languageOpen)}
                   className="flex items-center space-x-2 px-3 py-2 rounded-lg text-gray-600 hover:text-yellow-600 hover:bg-yellow-50 transition-colors border border-gray-200"
-                  title="Select Language"
+                  title={t('nav.selectLanguage')}
                 >
                   <Globe className="w-4 h-4" />
                   <span className="text-sm font-medium">{currentLanguage?.flag} {currentLanguage?.name}</span>
@@ -114,6 +116,7 @@ export default function Navigation() {
                   <Link
                     to="/notifications"
                     className="p-2 text-gray-600 hover:text-yellow-600 transition-colors"
+                    title={t('nav.notifications')}
                   >
                     <Bell className="w-5 h-5" />
                   </Link>
@@ -125,13 +128,13 @@ export default function Navigation() {
                         className="flex items-center space-x-2 text-gray-600 hover:text-yellow-600 transition-colors link-underline"
                       >
                         <LayoutDashboard className="w-4 h-4" />
-                        <span>Dashboard</span>
+                        <span>{t('nav.dashboard')}</span>
                       </Link>
                       <Link
                         to="/artisan/creative-studio"
                         className="flex items-center space-x-2 text-gray-600 hover:text-yellow-600 transition-colors link-underline"
                       >
-                        <span>Creative Studio</span>
+                        <span>{t('nav.creativeStudio')}</span>
                       </Link>
                       <div className="relative group">
                         <button
@@ -139,42 +142,18 @@ export default function Navigation() {
                           className="flex items-center space-x-1 text-gray-600 hover:text-yellow-600 transition-colors link-underline"
                         >
                           <Zap className="w-4 h-4" />
-                          <span>Agent Mode</span>
+                          <span>{t('nav.agentMode')}</span>
                           <ChevronDown className="w-4 h-4" />
                         </button>
                         {agentModeOpen && (
                           <div className="absolute left-0 mt-0 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
                             <Link
-                              to="/artisan/agent-mode/control-center"
+                              to="/artisan/agentmode"
                               className="block px-4 py-2 text-gray-700 hover:bg-yellow-50 transition-colors text-sm font-medium"
                               onClick={() => setAgentModeOpen(false)}
                             >
-                              <span className="font-semibold">AI Control Center</span>
-                              <p className="text-xs text-gray-500 font-normal">35+ AI features</p>
-                            </Link>
-                            <Link
-                              to="/artisan/agent-mode/social-commerce"
-                              className="block px-4 py-2 text-gray-700 hover:bg-yellow-50 transition-colors text-sm font-medium"
-                              onClick={() => setAgentModeOpen(false)}
-                            >
-                              <span className="font-semibold">Social Commerce</span>
-                              <p className="text-xs text-gray-500 font-normal">Community tools</p>
-                            </Link>
-                            <Link
-                              to="/artisan/agent-mode/sustainability"
-                              className="block px-4 py-2 text-gray-700 hover:bg-yellow-50 transition-colors text-sm font-medium"
-                              onClick={() => setAgentModeOpen(false)}
-                            >
-                              <span className="font-semibold">Sustainability</span>
-                              <p className="text-xs text-gray-500 font-normal">Eco-tracking</p>
-                            </Link>
-                            <Link
-                              to="/artisan/agent-mode/cross-border"
-                              className="block px-4 py-2 text-gray-700 hover:bg-yellow-50 transition-colors text-sm font-medium"
-                              onClick={() => setAgentModeOpen(false)}
-                            >
-                              <span className="font-semibold">Cross-Border</span>
-                              <p className="text-xs text-gray-500 font-normal">Global expansion</p>
+                              <span className="font-semibold">{t('nav.agentMode')}</span>
+                              <p className="text-xs text-gray-500 font-normal">{t('nav.socialPosting')}</p>
                             </Link>
                           </div>
                         )}
@@ -188,7 +167,7 @@ export default function Navigation() {
                       className="flex items-center space-x-2 text-gray-600 hover:text-yellow-600 transition-colors link-underline"
                     >
                       <ShoppingCart className="w-4 h-4" />
-                      <span>Cart</span>
+                      <span>{t('nav.cart')}</span>
                     </Link>
                   )}
 
@@ -197,7 +176,7 @@ export default function Navigation() {
                     className="flex items-center space-x-2 text-gray-600 hover:text-yellow-600 transition-colors link-underline cursor-pointer"
                   >
                     <User className="w-4 h-4" />
-                    <span className="text-sm">{profile?.full_name || 'User'}</span>
+                    <span className="text-sm">{profile?.full_name || t('nav.profile')}</span>
                   </Link>
 
                   <button
@@ -205,7 +184,7 @@ export default function Navigation() {
                     className="flex items-center space-x-2 text-gray-600 hover:text-red-600 transition-colors link-underline"
                   >
                     <LogOut className="w-4 h-4" />
-                    <span>Logout</span>
+                    <span>{t('nav.logout')}</span>
                   </button>
                 </>
               ) : (
@@ -214,13 +193,13 @@ export default function Navigation() {
                     to="/login"
                     className="text-gray-600 hover:text-yellow-600 font-medium transition-colors link-underline"
                   >
-                    Login
+                    {t('nav.login')}
                   </Link>
                   <Link
                     to="/signup"
                     className="btn-primary"
                   >
-                    Sign Up
+                    {t('nav.signUp')}
                   </Link>
                 </>
               )}
@@ -271,14 +250,14 @@ export default function Navigation() {
                   className="block text-gray-600 hover:text-yellow-600 font-medium transition-colors"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  Marketplace
+                  {t('nav.marketplace')}
                 </Link>
                 <Link
                   to="/find-artisans"
                   className="block text-gray-600 hover:text-yellow-600 font-medium transition-colors"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  Find Artisans
+                  {t('nav.findArtisans')}
                 </Link>
                 
                 {user ? (
@@ -290,49 +269,24 @@ export default function Navigation() {
                           className="block text-gray-600 hover:text-yellow-600 font-medium transition-colors"
                           onClick={() => setMobileMenuOpen(false)}
                         >
-                          Dashboard
+                          {t('nav.dashboard')}
                         </Link>
                         <Link
                           to="/artisan/creative-studio"
                           className="block text-gray-600 hover:text-yellow-600 font-medium transition-colors"
                           onClick={() => setMobileMenuOpen(false)}
                         >
-                          Creative Studio
+                          {t('nav.creativeStudio')}
                         </Link>
-                        <div className="border-t border-gray-200 pt-4 mt-4">
-                          <p className="text-gray-700 font-semibold mb-3 flex items-center space-x-2">
-                            <Zap className="w-4 h-4" />
-                            <span>Agent Mode</span>
-                          </p>
-                          <Link
-                            to="/artisan/agent-mode/control-center"
-                            className="block text-gray-600 hover:text-yellow-600 font-medium transition-colors pl-6 mb-2"
-                            onClick={() => setMobileMenuOpen(false)}
-                          >
-                            AI Control Center (35+ features)
-                          </Link>
-                          <Link
-                            to="/artisan/agent-mode/social-commerce"
-                            className="block text-gray-600 hover:text-yellow-600 font-medium transition-colors pl-6 mb-2"
-                            onClick={() => setMobileMenuOpen(false)}
-                          >
-                            Social Commerce
-                          </Link>
-                          <Link
-                            to="/artisan/agent-mode/sustainability"
-                            className="block text-gray-600 hover:text-yellow-600 font-medium transition-colors pl-6 mb-2"
-                            onClick={() => setMobileMenuOpen(false)}
-                          >
-                            Sustainability
-                          </Link>
-                          <Link
-                            to="/artisan/agent-mode/cross-border"
-                            className="block text-gray-600 hover:text-yellow-600 font-medium transition-colors pl-6"
-                            onClick={() => setMobileMenuOpen(false)}
-                          >
-                            Cross-Border
-                          </Link>
-                        </div>
+                        <Link
+                          to="/artisan/agentmode"
+                          className="block text-gray-600 hover:text-yellow-600 font-medium transition-colors flex items-center space-x-2"
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          <Zap className="w-4 h-4" />
+                          <span>{t('nav.agentMode')}</span>
+                          <p className="text-xs text-gray-500">{t('nav.socialPosting')}</p>
+                        </Link>
                       </>
                     )}
                     {profile?.role === 'customer' && (
@@ -341,7 +295,7 @@ export default function Navigation() {
                         className="block text-gray-600 hover:text-yellow-600 font-medium transition-colors"
                         onClick={() => setMobileMenuOpen(false)}
                       >
-                        Cart
+                        {t('nav.cart')}
                       </Link>
                     )}
                     <Link
@@ -349,7 +303,7 @@ export default function Navigation() {
                       className="block text-gray-600 hover:text-yellow-600 font-medium transition-colors"
                       onClick={() => setMobileMenuOpen(false)}
                     >
-                      Profile
+                      {t('nav.profile')}
                     </Link>
                     <button
                       onClick={() => {
@@ -358,7 +312,7 @@ export default function Navigation() {
                       }}
                       className="block text-red-600 hover:text-red-700 font-medium transition-colors"
                     >
-                      Logout
+                      {t('nav.logout')}
                     </button>
                   </div>
                 ) : (
@@ -368,14 +322,14 @@ export default function Navigation() {
                       className="block text-gray-600 hover:text-yellow-600 font-medium transition-colors"
                       onClick={() => setMobileMenuOpen(false)}
                     >
-                      Login
+                      {t('nav.login')}
                     </Link>
                     <Link
                       to="/signup"
                       className="block text-center btn-primary"
                       onClick={() => setMobileMenuOpen(false)}
                     >
-                      Sign Up
+                      {t('nav.signUp')}
                     </Link>
                   </div>
                 )}

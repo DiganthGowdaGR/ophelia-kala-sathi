@@ -18,6 +18,7 @@ const AiAgentControlPage = lazy(() => import('@/pages/artisan/AiAgentControlPage
 const MarketSimulationPage = lazy(() => import('@/pages/artisan/MarketSimulationPage'));
 const SocialDistributionPage = lazy(() => import('@/pages/artisan/SocialDistributionPage'));
 const VoiceMentorPage = lazy(() => import('@/pages/artisan/VoiceMentorPage'));
+const AgentModePage = lazy(() => import('@/pages/artisan/AgentModePage'));
 const CustomerMarketplace = lazy(() => import('@/pages/CustomerMarketplace'));
 const ProductDetailsPage = lazy(() => import('@/pages/ProductDetailsPage'));
 const CartPage = lazy(() => import('@/pages/CartPage'));
@@ -164,13 +165,21 @@ function App() {
                     </ProtectedRoute>
                   } 
                 />
-                <Route 
-                  path="/artisan/voice-mentor" 
+                <Route
+                  path="/artisan/voice-mentor"
                   element={
                     <ProtectedRoute requiredRole="artisan">
                       <VoiceMentorPage />
                     </ProtectedRoute>
-                  } 
+                  }
+                />
+                <Route
+                  path="/artisan/agentmode"
+                  element={
+                    <ProtectedRoute requiredRole="artisan">
+                      <AgentModePage />
+                    </ProtectedRoute>
+                  }
                 />
                 <Route path="/maps" element={<GoogleMapsPage />} />
                 
@@ -302,6 +311,16 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <ProfilePage />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/notifications" 
+                  element={
+                    <ProtectedRoute>
+                      <div className="min-h-screen flex items-center justify-center">
+                        <p className="text-gray-600">Notifications page coming soon</p>
+                      </div>
                     </ProtectedRoute>
                   } 
                 />

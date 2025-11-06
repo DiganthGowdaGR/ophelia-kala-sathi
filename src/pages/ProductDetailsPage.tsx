@@ -234,7 +234,7 @@ export default function ProductDetailsPage() {
     return (
       <div className="min-h-screen bg-white">
         <Navigation />
-        <div className="flex justify-center items-center py-20">
+        <div className="flex justify-center items-center py-20 pt-16">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         </div>
       </div>
@@ -245,7 +245,7 @@ export default function ProductDetailsPage() {
     return (
       <div className="min-h-screen bg-white">
         <Navigation />
-        <div className="text-center py-20">
+        <div className="text-center py-20 pt-16">
           <p className="text-gray-600 text-lg">Product not found</p>
         </div>
       </div>
@@ -259,7 +259,7 @@ export default function ProductDetailsPage() {
     <div className="min-h-screen bg-white">
       <Navigation />
       
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-16">
         {/* Back Button */}
         <button
           onClick={() => navigate('/marketplace')}

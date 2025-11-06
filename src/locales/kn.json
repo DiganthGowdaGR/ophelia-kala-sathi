@@ -1,0 +1,24 @@
+{
+  "nav": {
+    "marketplace": "ಮಾರ್ಕೆಟ್‌ಪ್ಲೇಸ್",
+    "findArtisans": "ಕಲಾವಿದರನ್ನು ಹುಡುಕಿ",
+    "dashboard": "ಡ್ಯಾಶ್‌ಬೋರ್ಡ್",
+    "creativeStudio": "ಸೃಜನಶೀಲ ಸ್ಟುಡಿಯೋ",
+    "agentMode": "ಏಜೆಂಟ್ ಮೋಡ್",
+    "socialPosting": "ಸೋಶ್ಯಲ್ ಪೋಸ್ಟಿಂಗ್ ಮಾನಿಟರಿಂಗ್",
+    "cart": "ಕಾರ್ಟ್",
+    "profile": "ಪ್ರೋಫೈಲ್",
+    "logout": "ಲಾಗ್ ಔಟ್",
+    "login": "ಲಾಗಿನ್",
+    "signUp": "ಸೈನ್ ಅಪ್",
+    "notifications": "ಕ್ರಿತಿಗಳು",
+    "selectLanguage": "ಭಾಷೆಯನ್ನು ಆರಿಸಿ"
+  },
+  "common": {
+    "search": "ಹುಡುಕಿ",
+    "filter": "ಫಿಲ್ಟರ್",
+    "loading": "ಲೋಡ್ ಆಗುತ್ತಿದೆ...",
+    "error": "ತ್ರುಟಿ",
+    "success": "ಯಶಸ್ವಿ"
+  }
+}

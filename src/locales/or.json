@@ -1,0 +1,24 @@
+{
+  "nav": {
+    "marketplace": "ମାର୍କେଟପ୍ଲେସ",
+    "findArtisans": "କାରିଗରମାନଙ୍କୁ ଖୋଜନ୍ତୁ",
+    "dashboard": "ଡ୍ୟାଶବୋର୍ଡ",
+    "creativeStudio": "ସୃଜନଶୀଳ ଷ୍ଟୁଡିଓ",
+    "agentMode": "ଏଜେଣ୍ଟ ମୋଡ୍",
+    "socialPosting": "ସୋସିଆଲ ପୋଷ୍ଟିଂଗ ମନିଟରିଂଗ",
+    "cart": "କାର୍ଟ",
+    "profile": "ପ୍ରୋଫାଇଲ",
+    "logout": "ଲଗ୍ ଆଉଟ୍",
+    "login": "ଲଗ୍ ଇନ୍",
+    "signUp": "ସାଇନ୍ ଅପ୍",
+    "notifications": "ବିଜ୍ଞପ୍ତି",
+    "selectLanguage": "ଭାଷା ଚୟନ କରନ୍ତୁ"
+  },
+  "common": {
+    "search": "ଖୋଜନ୍ତୁ",
+    "filter": "ଫିଲ୍ଟର୍",
+    "loading": "ଲୋଡ୍ ହେଉଛି...",
+    "error": "ତ୍ରୁଟି",
+    "success": "ସଫଳ"
+  }
+}

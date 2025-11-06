@@ -2,14 +2,15 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import Navigation from '@/components/shared/Navigation';
-import { Mail, Lock } from 'lucide-react';
+import { Mail, Lock, Chrome } from 'lucide-react';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signIn } = useAuth();
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const { signIn, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
 
   async function handleSubmit(e: React.FormEvent) {
@@ -24,6 +25,18 @@ export default function LoginPage() {
       setError(err.message || 'Failed to sign in');
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleGoogleSignIn() {
+    setError('');
+    setGoogleLoading(true);
+
+    try {
+      await signInWithGoogle();
+    } catch (err: any) {
+      setError(err.message || 'Failed to sign in with Google');
+      setGoogleLoading(false);
     }
   }
 
@@ -81,12 +94,33 @@ export default function LoginPage() {
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || googleLoading}
               className="w-full bg-primary text-white py-3 rounded-lg font-semibold hover:bg-accent transition disabled:opacity-50 uppercase tracking-button"
             >
               {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
+
+          <div className="mt-6">
+            <div className="relative mb-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-border"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-background text-text-secondary">Or continue with</span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              disabled={loading || googleLoading}
+              onClick={handleGoogleSignIn}
+              className="w-full flex items-center justify-center space-x-2 border border-border text-text-primary py-3 rounded-lg font-semibold hover:bg-secondary transition disabled:opacity-50"
+            >
+              <Chrome className="w-5 h-5" />
+              <span>{googleLoading ? 'Signing in...' : 'Sign in with Google'}</span>
+            </button>
+          </div>
 
           <div className="mt-6 text-center">
             <p className="text-text-secondary">

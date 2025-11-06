@@ -73,6 +73,11 @@
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
+  /* Content with fixed nav - adds top padding to prevent navbar overlap */
+  .content-with-fixed-nav {
+    @apply pt-16;
+  }
+
   .announcement-bar {
     @apply bg-gray-900 text-white text-sm py-2;
   }

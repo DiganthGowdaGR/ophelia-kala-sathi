@@ -1,11 +1,13 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import Navigation from '@/components/shared/Navigation';
+import FindArtisansSidebar from '@/components/FindArtisansSidebar';
+import { GoogleMap, LoadScript, Marker, InfoWindow } from '@react-google-maps/api';
 import { 
   Search, MapPin, Filter, Star, User, Phone, Mail, 
   ShoppingBag, StarHalf, ChevronDown, X, ArrowUp, 
-  PhoneCall, MessageCircle, Navigation2, Clock, Eye
+  PhoneCall, MessageCircle, Navigation2, Clock, Eye, Menu, Heart
 } from 'lucide-react';
 
 interface Artisan {
@@ -39,17 +41,28 @@ interface SearchFilters {
 export default function FindArtisansPage() {
   const [artisans, setArtisans] = useState<Artisan[]>([]);
   const [loading, setLoading] = useState(true);
+  const [mapLoading, setMapLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilters, setShowFilters] = useState(false);
+  const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [selectedArtisan, setSelectedArtisan] = useState<Artisan | null>(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [favoriteArtisans, setFavoriteArtisans] = useState<Set<string>>(new Set());
+  const [selectedMapMarker, setSelectedMapMarker] = useState<Artisan | null>(null);
   const [filters, setFilters] = useState<SearchFilters>({
     category: '',
     location: '',
-    radius: 50, // km
+    radius: 50,
     sortBy: 'rating'
   });
+
+  const googleMapsApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+  const mapContainerStyle = {
+    width: '100%',
+    height: '400px',
+    borderRadius: '12px'
+  };
 
   const [categories] = useState([
     'All Categories',
@@ -66,7 +79,6 @@ export default function FindArtisansPage() {
     'Other'
   ]);
 
-  // Load artisans data
   const loadArtisans = useCallback(async () => {
     setLoading(true);
     try {
@@ -94,7 +106,6 @@ export default function FindArtisansPage() {
     }
   }, [filters, searchTerm]);
 
-  // Get user location
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -106,21 +117,18 @@ export default function FindArtisansPage() {
         },
         (error) => {
           console.log('Location access denied:', error);
-          // Use a default location (e.g., New York City)
           setUserLocation({ lat: 40.7128, lng: -74.0060 });
         }
       );
     }
   }, []);
 
-  // Load artisans on mount and filter/search changes
   useEffect(() => {
     loadArtisans();
   }, [loadArtisans]);
 
-  // Calculate distance between two coordinates
   const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
-    const R = 6371; // Earth's radius in km
+    const R = 6371;
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLng = (lng2 - lng1) * Math.PI / 180;
     const a = 
@@ -131,7 +139,6 @@ export default function FindArtisansPage() {
     return R * c;
   };
 
-  // Filter and sort artisans
   const filteredArtisans = artisans
     .filter(artisan => {
       if (!userLocation || !artisan.latitude || !artisan.longitude) return true;
@@ -164,6 +171,10 @@ export default function FindArtisansPage() {
       }
     });
 
+  const mapArtisans = useMemo(() => {
+    return filteredArtisans.slice(0, 100);
+  }, [filteredArtisans]);
+
   const renderStars = (rating: number) => {
     const stars = [];
     const fullStars = Math.floor(rating);
@@ -189,6 +200,16 @@ export default function FindArtisansPage() {
     loadArtisans();
   };
 
+  const toggleFavorite = (artisanId: string) => {
+    const newFavorites = new Set(favoriteArtisans);
+    if (newFavorites.has(artisanId)) {
+      newFavorites.delete(artisanId);
+    } else {
+      newFavorites.add(artisanId);
+    }
+    setFavoriteArtisans(newFavorites);
+  };
+
   const getDistance = (artisan: Artisan) => {
     if (!userLocation || !artisan.latitude || !artisan.longitude) return null;
     
@@ -204,7 +225,7 @@ export default function FindArtisansPage() {
 
   const ArtisanProfileModal = ({ artisan, onClose }: { artisan: Artisan; onClose: () => void }) => (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-8 shadow-2xl">
+      <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto p-8 border border-gray-200">
         <div className="flex justify-between items-start mb-6">
           <div className="flex items-center space-x-4">
             <div className="w-20 h-20 rounded-full overflow-hidden bg-gray-100">
@@ -272,12 +293,12 @@ export default function FindArtisansPage() {
             </div>
           </div>
 
-          <div className="flex space-x-3 pt-4">
-            <button className="flex-1 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition flex items-center justify-center space-x-2">
+          <div className="flex space-x-2.5 pt-4">
+            <button className="flex-1 bg-gray-900 text-white px-4 py-2 rounded-md hover:bg-gray-800 transition flex items-center justify-center space-x-2 text-sm font-medium">
               <MessageCircle className="w-4 h-4" />
-              <span>Send Message</span>
+              <span>Message</span>
             </button>
-            <button className="flex-1 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition flex items-center justify-center space-x-2">
+            <button className="flex-1 bg-gray-900 text-white px-4 py-2 rounded-md hover:bg-gray-800 transition flex items-center justify-center space-x-2 text-sm font-medium">
               <PhoneCall className="w-4 h-4" />
               <span>Call</span>
             </button>
@@ -287,7 +308,7 @@ export default function FindArtisansPage() {
                   const url = `https://www.google.com/maps/dir/${userLocation.lat},${userLocation.lng}/${artisan.latitude},${artisan.longitude}`;
                   window.open(url, '_blank');
                 }}
-                className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center justify-center space-x-2"
+                className="flex-1 bg-gray-900 text-white px-4 py-2 rounded-md hover:bg-gray-800 transition flex items-center justify-center space-x-2 text-sm font-medium"
               >
                 <Navigation2 className="w-4 h-4" />
                 <span>Directions</span>
@@ -300,269 +321,370 @@ export default function FindArtisansPage() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-indigo-50 to-purple-50">
+    <div className="min-h-screen bg-white">
       <Navigation />
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-4">
-            Find Artisans
-          </h1>
-          <p className="text-gray-600">Discover talented artisans near you and around the world</p>
-          
-          {/* Location Status */}
-          {userLocation && (
-            <div className="mt-4 flex items-center space-x-2 text-sm text-green-600 bg-green-50 px-3 py-2 rounded-lg">
-              <MapPin className="w-4 h-4" />
-              <span>Location detected - showing artisans within {filters.radius}km radius</span>
-            </div>
-          )}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pt-16">
+        {/* Header - Full Width */}
+        <div className="mb-10 flex justify-between items-start">
+          <div>
+            <h1 className="text-3xl font-semibold text-gray-900 mb-2">
+              Find Artisans
+            </h1>
+            <p className="text-sm text-gray-600">Discover talented artisans near you and around the world</p>
+          </div>
+          <button
+            onClick={() => setShowMobileSidebar(!showMobileSidebar)}
+            className="lg:hidden p-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition"
+            title="Toggle sidebar"
+          >
+            {showMobileSidebar ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
         </div>
 
-        {/* Search and Filter Bar */}
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-          <div className="flex flex-col lg:flex-row gap-4">
-            {/* Search Input */}
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                type="text"
-                placeholder="Search artisans, skills, or products..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-600 focus:border-transparent"
-                onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-              />
-            </div>
+        {/* Location Status */}
+        {userLocation && (
+          <div className="mb-8 flex items-center space-x-2 text-xs text-gray-600 bg-gray-50 px-3 py-2 rounded-md border border-gray-200">
+            <MapPin className="w-3.5 h-3.5" />
+            <span>Location detected - showing artisans within {filters.radius}km radius</span>
+          </div>
+        )}
 
-            {/* Filter Button */}
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center space-x-2 bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition"
-            >
-              <Filter className="w-5 h-5" />
-              <span>Filters</span>
-              <ChevronDown className={`w-4 h-4 transition-transform ${showFilters ? 'rotate-180' : ''}`} />
-            </button>
+        {/* Mobile Sidebar Overlay */}
+        {showMobileSidebar && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden" onClick={() => setShowMobileSidebar(false)} />
+        )}
 
-            {/* Search Button */}
-            <button
-              onClick={handleSearch}
-              className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition"
-            >
-              Search
-            </button>
+        {/* Mobile Sidebar */}
+        {showMobileSidebar && (
+          <div className="fixed right-0 top-16 bottom-0 w-72 bg-white border-l border-gray-200 z-50 lg:hidden overflow-y-auto">
+            <FindArtisansSidebar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Sidebar */}
+          <div className="hidden lg:block">
+            <FindArtisansSidebar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
           </div>
 
-          {/* Advanced Filters */}
-          {showFilters && (
-            <div className="mt-6 pt-6 border-t border-gray-200">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
-                  <select
-                    value={filters.category}
-                    onChange={(e) => setFilters({ ...filters, category: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-600 focus:border-transparent"
-                  >
-                    {categories.map(category => (
-                      <option key={category} value={category === 'All Categories' ? '' : category}>
-                        {category}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+          {/* Main Content */}
+          <div className="lg:col-span-3">
+            {/* Filter Bar */}
+            <div className="bg-white rounded-lg border border-gray-200 p-5 mb-8">
+              <div className="flex flex-col lg:flex-row gap-3">
+                {/* Filter Button */}
+                <button
+                  onClick={() => setShowFilters(!showFilters)}
+                  className="flex items-center justify-center space-x-1.5 bg-gray-100 text-gray-700 px-4 py-2.5 rounded-md hover:bg-gray-200 transition text-sm font-medium"
+                >
+                  <Filter className="w-4 h-4" />
+                  <span>Filters</span>
+                  <ChevronDown className={`w-3 h-3 transition-transform ${showFilters ? 'rotate-180' : ''}`} />
+                </button>
+              </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
-                  <select
-                    value={filters.sortBy}
-                    onChange={(e) => setFilters({ ...filters, sortBy: e.target.value as any })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-600 focus:border-transparent"
-                  >
-                    <option value="rating">Highest Rated</option>
-                    <option value="reviews">Most Reviews</option>
-                    <option value="newest">Newest</option>
-                    <option value="distance">Nearest</option>
-                  </select>
-                </div>
+              {/* Advanced Filters */}
+              {showFilters && (
+                <div className="mt-5 pt-5 border-t border-gray-200">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1.5">Category</label>
+                      <select
+                        value={filters.category}
+                        onChange={(e) => setFilters({ ...filters, category: e.target.value })}
+                        className="w-full px-3 py-2 text-sm border border-gray-200 rounded-md focus:ring-1 focus:ring-gray-400 focus:border-transparent"
+                      >
+                        {categories.map(category => (
+                          <option key={category} value={category === 'All Categories' ? '' : category}>
+                            {category}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Radius: {filters.radius}km
-                  </label>
-                  <input
-                    type="range"
-                    min="5"
-                    max="200"
-                    value={filters.radius}
-                    onChange={(e) => setFilters({ ...filters, radius: parseInt(e.target.value) })}
-                    className="w-full"
-                  />
-                </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1.5">Sort By</label>
+                      <select
+                        value={filters.sortBy}
+                        onChange={(e) => setFilters({ ...filters, sortBy: e.target.value as any })}
+                        className="w-full px-3 py-2 text-sm border border-gray-200 rounded-md focus:ring-1 focus:ring-gray-400 focus:border-transparent"
+                      >
+                        <option value="rating">Highest Rated</option>
+                        <option value="reviews">Most Reviews</option>
+                        <option value="newest">Newest</option>
+                        <option value="distance">Nearest</option>
+                      </select>
+                    </div>
 
-                <div className="flex items-end">
-                  <button
-                    onClick={() => setFilters({ category: '', location: '', radius: 50, sortBy: 'rating' })}
-                    className="w-full bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition"
-                  >
-                    Clear Filters
-                  </button>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1.5">
+                        Radius: {filters.radius}km
+                      </label>
+                      <input
+                        type="range"
+                        min="5"
+                        max="200"
+                        value={filters.radius}
+                        onChange={(e) => setFilters({ ...filters, radius: parseInt(e.target.value) })}
+                        className="w-full"
+                      />
+                    </div>
+
+                    <div className="flex items-end">
+                      <button
+                        onClick={() => setFilters({ category: '', location: '', radius: 50, sortBy: 'rating' })}
+                        className="w-full bg-gray-100 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-200 transition text-sm"
+                      >
+                        Clear
+                      </button>
+                    </div>
+                  </div>
                 </div>
+              )}
+            </div>
+
+            {/* Google Map */}
+            {userLocation && googleMapsApiKey && (
+              <div className="mb-8 border border-gray-200 rounded-lg overflow-hidden relative">
+                {mapLoading && (
+                  <div className="absolute inset-0 bg-white z-10 flex items-center justify-center">
+                    <div className="text-center">
+                      <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-gray-400 mx-auto mb-2"></div>
+                      <p className="text-xs text-gray-500">Loading map...</p>
+                    </div>
+                  </div>
+                )}
+                <LoadScript googleMapsApiKey={googleMapsApiKey} libraries={['places']}>
+                  <GoogleMap
+                    mapContainerStyle={mapContainerStyle}
+                    center={userLocation}
+                    zoom={12}
+                    onLoad={() => setMapLoading(false)}
+                    onUnmount={() => setMapLoading(false)}
+                    options={{
+                      styles: [
+                        {
+                          featureType: 'all',
+                          elementType: 'labels.text.fill',
+                          stylers: [{ color: '#616161' }]
+                        }
+                      ],
+                      disableDefaultUI: false,
+                      zoomControl: true,
+                      mapTypeControl: false,
+                      fullscreenControl: true
+                    }}
+                  >
+                    {userLocation && (
+                      <Marker
+                        position={userLocation}
+                        title="Your Location"
+                        icon="http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+                      />
+                    )}
+
+                    {mapArtisans.map((artisan) => 
+                      artisan.latitude && artisan.longitude ? (
+                        <Marker
+                          key={artisan.id}
+                          position={{ lat: artisan.latitude, lng: artisan.longitude }}
+                          title={artisan.full_name}
+                          onClick={() => setSelectedMapMarker(artisan)}
+                          icon="http://maps.google.com/mapfiles/ms/icons/red-dot.png"
+                        />
+                      ) : null
+                    )}
+
+                    {selectedMapMarker && selectedMapMarker.latitude && selectedMapMarker.longitude && (
+                      <InfoWindow
+                        position={{ lat: selectedMapMarker.latitude, lng: selectedMapMarker.longitude }}
+                        onCloseClick={() => setSelectedMapMarker(null)}
+                      >
+                        <div className="p-2 text-sm">
+                          <p className="font-semibold text-gray-900">{selectedMapMarker.full_name}</p>
+                          {selectedMapMarker.business_name && (
+                            <p className="text-indigo-600">{selectedMapMarker.business_name}</p>
+                          )}
+                          <p className="text-gray-600 text-xs">{selectedMapMarker.category}</p>
+                          {selectedMapMarker.rating && (
+                            <p className="text-yellow-500 text-xs">★ {selectedMapMarker.rating.toFixed(1)}</p>
+                          )}
+                        </div>
+                      </InfoWindow>
+                    )}
+                  </GoogleMap>
+                </LoadScript>
+              </div>
+            )}
+
+            {/* Results Summary */}
+            <div className="flex justify-between items-center mb-6">
+              <p className="text-sm text-gray-600">
+                Found <span className="font-medium">{filteredArtisans.length}</span> artisan{filteredArtisans.length !== 1 ? 's' : ''}
+                {userLocation && ' near you'}
+              </p>
+              
+              <div className="flex items-center space-x-1.5 text-xs text-gray-500">
+                {userLocation && (
+                  <>
+                    <Navigation2 className="w-3.5 h-3.5" />
+                    <span>Location-based results</span>
+                  </>
+                )}
               </div>
             </div>
-          )}
-        </div>
 
-        {/* Results Summary */}
-        <div className="flex justify-between items-center mb-6">
-          <p className="text-gray-600">
-            Found {filteredArtisans.length} artisan{filteredArtisans.length !== 1 ? 's' : ''}
-            {userLocation && ' near you'}
-          </p>
-          
-          <div className="flex items-center space-x-2 text-sm text-gray-500">
-            {userLocation && (
-              <>
-                <Navigation2 className="w-4 h-4" />
-                <span>Location-based results</span>
-              </>
+            {/* Loading State */}
+            {loading && (
+              <div className="text-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+                <p className="text-gray-600">Loading artisans...</p>
+              </div>
+            )}
+
+            {/* No Results */}
+            {!loading && filteredArtisans.length === 0 && (
+              <div className="text-center py-12">
+                <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Search className="w-10 h-10 text-gray-300" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">No artisans found</h3>
+                <p className="text-sm text-gray-600 mb-4">Try adjusting your search criteria or location filters</p>
+                <button
+                  onClick={() => {
+                    setSearchTerm('');
+                    setFilters({ category: '', location: '', radius: 50, sortBy: 'rating' });
+                    loadArtisans();
+                  }}
+                  className="bg-gray-900 text-white px-5 py-2.5 rounded-md hover:bg-gray-800 transition text-sm font-medium"
+                >
+                  Clear Search
+                </button>
+              </div>
+            )}
+
+            {/* Artisan Grid */}
+            {!loading && filteredArtisans.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                {filteredArtisans.map((artisan) => (
+                  <div
+                    key={artisan.id}
+                    className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:border-gray-300 hover:shadow-sm transition-all duration-200 cursor-pointer group"
+                    onClick={() => {
+                      setSelectedArtisan(artisan);
+                      setShowProfileModal(true);
+                    }}
+                  >
+                    <div className="relative">
+                      <div className="h-48 bg-gray-100 flex items-center justify-center">
+                        {artisan.profile_image_url ? (
+                          <img
+                            src={artisan.profile_image_url}
+                            alt={artisan.full_name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="text-center">
+                            <User className="w-16 h-16 text-indigo-400 mx-auto mb-2" />
+                            <p className="text-sm text-gray-600">{artisan.full_name}</p>
+                          </div>
+                        )}
+                      </div>
+
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleFavorite(artisan.id);
+                        }}
+                        className="absolute bottom-3 right-3 p-2 bg-white rounded-full border border-gray-200 hover:bg-gray-50 transition"
+                        title={favoriteArtisans.has(artisan.id) ? 'Remove from favorites' : 'Save to favorites'}
+                      >
+                        <Heart
+                          className={`w-5 h-5 transition-colors ${
+                            favoriteArtisans.has(artisan.id)
+                              ? 'fill-red-500 text-red-500'
+                              : 'text-gray-400 hover:text-red-500'
+                          }`}
+                        />
+                      </button>
+                      
+                      {artisan.rating && artisan.rating > 0 && (
+                        <div className="absolute top-3 right-3 bg-white rounded-full px-2 py-1 border border-gray-200">
+                          <div className="flex items-center space-x-1">
+                            <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                            <span className="text-xs font-semibold text-gray-900">{artisan.rating.toFixed(1)}</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {getDistance(artisan) && (
+                        <div className="absolute top-3 left-3 bg-gray-900 text-white rounded-full px-2 py-1 border border-gray-900">
+                          <div className="flex items-center space-x-1">
+                            <MapPin className="w-3 h-3" />
+                            <span className="text-xs">{getDistance(artisan)}</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="p-4">
+                      <div className="flex justify-between items-start mb-2.5">
+                        <div>
+                          <h3 className="text-sm font-semibold text-gray-900 group-hover:text-gray-700 transition">
+                            {artisan.full_name}
+                          </h3>
+                          {artisan.business_name && (
+                            <p className="text-xs text-gray-600 font-medium">{artisan.business_name}</p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center space-x-1.5 mb-2.5">
+                        <span className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded-md">
+                          {artisan.category}
+                        </span>
+                        {artisan.response_time && (
+                          <span className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded-md flex items-center space-x-1">
+                            <Clock className="w-3 h-3" />
+                            <span>{artisan.response_time}</span>
+                          </span>
+                        )}
+                      </div>
+
+                      <p className="text-xs text-gray-600 mb-3 line-clamp-2">
+                        {artisan.description || artisan.bio || 'Experienced artisan specializing in traditional crafts...'}
+                      </p>
+
+                      <div className="flex items-center justify-between text-xs text-gray-500">
+                        <div className="flex items-center space-x-1">
+                          <MapPin className="w-3 h-3" />
+                          <span className="truncate">{artisan.location}</span>
+                        </div>
+                        
+                        {artisan.review_count && artisan.review_count > 0 && (
+                          <div className="flex items-center space-x-1">
+                            <Eye className="w-3 h-3" />
+                            <span>{artisan.review_count} reviews</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Load More Button */}
+            {!loading && filteredArtisans.length >= 20 && (
+              <div className="text-center mt-8">
+                <button className="bg-gray-900 text-white px-6 py-2.5 rounded-md hover:bg-gray-800 transition text-sm font-medium">
+                  Load More
+                </button>
+              </div>
             )}
           </div>
         </div>
-
-        {/* Loading State */}
-        {loading && (
-          <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading artisans...</p>
-          </div>
-        )}
-
-        {/* No Results */}
-        {!loading && filteredArtisans.length === 0 && (
-          <div className="text-center py-12">
-            <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Search className="w-12 h-12 text-gray-400" />
-            </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">No artisans found</h3>
-            <p className="text-gray-600 mb-4">Try adjusting your search criteria or location filters</p>
-            <button
-              onClick={() => {
-                setSearchTerm('');
-                setFilters({ category: '', location: '', radius: 50, sortBy: 'rating' });
-                loadArtisans();
-              }}
-              className="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition"
-            >
-              Clear Search
-            </button>
-          </div>
-        )}
-
-        {/* Artisan Grid */}
-        {!loading && filteredArtisans.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredArtisans.map((artisan) => (
-              <div
-                key={artisan.id}
-                className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow cursor-pointer group"
-                onClick={() => {
-                  setSelectedArtisan(artisan);
-                  setShowProfileModal(true);
-                }}
-              >
-                <div className="relative">
-                  <div className="h-48 bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center">
-                    {artisan.profile_image_url ? (
-                      <img
-                        src={artisan.profile_image_url}
-                        alt={artisan.full_name}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="text-center">
-                        <User className="w-16 h-16 text-indigo-400 mx-auto mb-2" />
-                        <p className="text-sm text-gray-600">{artisan.full_name}</p>
-                      </div>
-                    )}
-                  </div>
-                  
-                  {artisan.rating && artisan.rating > 0 && (
-                    <div className="absolute top-3 right-3 bg-white rounded-full px-2 py-1 shadow-sm">
-                      <div className="flex items-center space-x-1">
-                        <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                        <span className="text-xs font-semibold">{artisan.rating.toFixed(1)}</span>
-                      </div>
-                    </div>
-                  )}
-
-                  {getDistance(artisan) && (
-                    <div className="absolute top-3 left-3 bg-green-600 text-white rounded-full px-2 py-1 shadow-sm">
-                      <div className="flex items-center space-x-1">
-                        <MapPin className="w-3 h-3" />
-                        <span className="text-xs">{getDistance(artisan)}</span>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                <div className="p-6">
-                  <div className="flex justify-between items-start mb-3">
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900 group-hover:text-indigo-600 transition">
-                        {artisan.full_name}
-                      </h3>
-                      {artisan.business_name && (
-                        <p className="text-sm text-indigo-600 font-medium">{artisan.business_name}</p>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex items-center space-x-2 mb-3">
-                    <span className="bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded-full">
-                      {artisan.category}
-                    </span>
-                    {artisan.response_time && (
-                      <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full flex items-center space-x-1">
-                        <Clock className="w-3 h-3" />
-                        <span>{artisan.response_time}</span>
-                      </span>
-                    )}
-                  </div>
-
-                  <p className="text-sm text-gray-600 mb-4 line-clamp-2">
-                    {artisan.description || artisan.bio || 'Experienced artisan specializing in traditional crafts...'}
-                  </p>
-
-                  <div className="flex items-center justify-between text-sm text-gray-500">
-                    <div className="flex items-center space-x-1">
-                      <MapPin className="w-4 h-4" />
-                      <span className="truncate">{artisan.location}</span>
-                    </div>
-                    
-                    {artisan.review_count && artisan.review_count > 0 && (
-                      <div className="flex items-center space-x-1">
-                        <Eye className="w-4 h-4" />
-                        <span>{artisan.review_count} reviews</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Load More Button */}
-        {!loading && filteredArtisans.length >= 20 && (
-          <div className="text-center mt-8">
-            <button className="bg-indigo-600 text-white px-8 py-3 rounded-lg hover:bg-indigo-700 transition">
-              Load More Artisans
-            </button>
-          </div>
-        )}
       </div>
 
       {/* Profile Modal */}

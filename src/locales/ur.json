@@ -1,0 +1,24 @@
+{
+  "nav": {
+    "marketplace": "مارکیٹ پلیس",
+    "findArtisans": "صنعتکاروں کو تلاش کریں",
+    "dashboard": "ڈیش بورڈ",
+    "creativeStudio": "تخلیقی اسٹوڈیو",
+    "agentMode": "ایجنٹ موڈ",
+    "socialPosting": "سوشل پوسٹنگ کی نگرانی",
+    "cart": "کارٹ",
+    "profile": "پروفائل",
+    "logout": "لاگ آؤٹ",
+    "login": "لاگ ان",
+    "signUp": "سائن اپ کریں",
+    "notifications": "اطلاعات",
+    "selectLanguage": "زبان منتخب کریں"
+  },
+  "common": {
+    "search": "تلاش",
+    "filter": "فلٹر",
+    "loading": "لوڈ ہو رہا ہے...",
+    "error": "خرابی",
+    "success": "کامیاب"
+  }
+}

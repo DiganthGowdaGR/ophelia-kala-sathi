@@ -209,7 +209,7 @@ export default function CustomerMarketplace() {
     return (
       <div className="min-h-screen bg-gray-50">
         <Navigation />
-        <div className="flex justify-center items-center py-20">
+        <div className="flex justify-center items-center py-20 pt-16">
           <div className="text-center">
             <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
             <h2 className="text-xl font-semibold text-gray-900 mb-2">Something went wrong</h2>
@@ -233,7 +233,7 @@ export default function CustomerMarketplace() {
     <div className="min-h-screen bg-gray-50">
       <Navigation />
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-16">
         {/* Page Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">

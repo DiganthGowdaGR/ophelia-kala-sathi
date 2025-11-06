@@ -134,7 +134,7 @@ export default function CheckoutPage() {
     return (
       <div className="min-h-screen bg-secondary">
         <Navigation />
-        <div className="flex justify-center items-center py-20">
+        <div className="flex justify-center items-center py-20 pt-16">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent"></div>
         </div>
       </div>
@@ -145,7 +145,7 @@ export default function CheckoutPage() {
     <div className="min-h-screen bg-secondary">
       <Navigation />
       
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pt-16">
         <h1 className="text-h1 font-bold text-text-primary mb-8">Checkout</h1>
 
         <form onSubmit={handleCheckout} className="space-y-8">

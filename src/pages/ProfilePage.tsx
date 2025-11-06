@@ -150,7 +150,7 @@ export default function ProfilePage() {
     return (
       <div className="min-h-screen bg-gradient-to-b from-yellow-50 to-gray-50">
         <Navigation />
-        <div className="flex justify-center items-center py-20">
+        <div className="flex justify-center items-center py-20 pt-16">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-600"></div>
         </div>
       </div>
@@ -161,7 +161,7 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-gradient-to-b from-yellow-50 to-gray-50">
       <Navigation />
       
-      <div className="max-w-6xl mx-auto px-4 py-8">
+      <div className="max-w-6xl mx-auto px-4 py-8 pt-16">
         {/* Header Section with Profile Image */}
         <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden mb-8">
           <div className="h-32 bg-gradient-to-r from-yellow-400 to-yellow-600"></div>

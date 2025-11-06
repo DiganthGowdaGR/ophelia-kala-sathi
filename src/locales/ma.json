@@ -1,0 +1,24 @@
+{
+  "nav": {
+    "marketplace": "बाजार",
+    "findArtisans": "शिल्पीलाई खोज्नुहोस्",
+    "dashboard": "ड्याशबोर्ड",
+    "creativeStudio": "रचनात्मक स्टुडियो",
+    "agentMode": "एजेन्ट मोड",
+    "socialPosting": "सामाजिक पोस्टिङ निरीक्षण",
+    "cart": "कार्ट",
+    "profile": "प्रोफाइल",
+    "logout": "लग आउट",
+    "login": "लग इन",
+    "signUp": "साइन अप",
+    "notifications": "सूचनाहरु",
+    "selectLanguage": "भाषा छान्नुहोस्"
+  },
+  "common": {
+    "search": "खोज्नुहोस्",
+    "filter": "फिल्टर",
+    "loading": "लोड हँदैछ...",
+    "error": "त्रुटि",
+    "success": "सफल"
+  }
+}

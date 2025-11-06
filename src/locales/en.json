@@ -1,0 +1,24 @@
+{
+  "nav": {
+    "marketplace": "Marketplace",
+    "findArtisans": "Find Artisans",
+    "dashboard": "Dashboard",
+    "creativeStudio": "Creative Studio",
+    "agentMode": "Agent Mode",
+    "socialPosting": "Social posting monitoring",
+    "cart": "Cart",
+    "profile": "Profile",
+    "logout": "Logout",
+    "login": "Login",
+    "signUp": "Sign Up",
+    "notifications": "Notifications",
+    "selectLanguage": "Select Language"
+  },
+  "common": {
+    "search": "Search",
+    "filter": "Filter",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "nav": {
+    "marketplace": "বাজারপ্লেস",
+    "findArtisans": "কারিগর খুঁজুন",
+    "dashboard": "ড্যাশবোর্ড",
+    "creativeStudio": "সৃজনশীল স্টুডিও",
+    "agentMode": "এজেন্ট মোড",
+    "socialPosting": "সোশ্যাল পোস্টিং নিরীক্ষণ",
+    "cart": "কার্ট",
+    "profile": "প্রোফাইল",
+    "logout": "লগআউট",
+    "login": "লগইন",
+    "signUp": "সাইন আপ",
+    "notifications": "বিজ্ঞপ্তি",
+    "selectLanguage": "ভাষা নির্বাচন করুন"
+  },
+  "common": {
+    "search": "অনুসন্ধান",
+    "filter": "ফিল্টার",
+    "loading": "লোড হচ্ছে...",
+    "error": "ত্রুটি",
+    "success": "সফল"
+  }
+}

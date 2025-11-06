@@ -1,0 +1,24 @@
+{
+  "nav": {
+    "marketplace": "বজাৰপথ",
+    "findArtisans": "কাৰিগৰ বিচাৰক",
+    "dashboard": "ড্যাশবোর্ড",
+    "creativeStudio": "সৃজনশীল স্টুডিও",
+    "agentMode": "এজেন্ট মোড",
+    "socialPosting": "সোচাল পোষ্টিং পৰীক্ষা",
+    "cart": "কার্ট",
+    "profile": "প্রোফাইল",
+    "logout": "লগ আউট",
+    "login": "লগ ইন",
+    "signUp": "চাইন আপ",
+    "notifications": "বিজ্ঞপ্তি",
+    "selectLanguage": "ভাষা নির্বাচন"
+  },
+  "common": {
+    "search": "বিচাৰক",
+    "filter": "ফিল্টাৰ",
+    "loading": "লোড হৈ আছে...",
+    "error": "ত্রুটি",
+    "success": "সফল"
+  }
+}

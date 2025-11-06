@@ -166,7 +166,7 @@ export default function ArtisanDashboard() {
     return (
       <div className="min-h-screen bg-secondary">
         <Navigation />
-        <div className="flex justify-center items-center py-20">
+        <div className="flex justify-center items-center py-20 pt-16">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent"></div>
         </div>
       </div>
@@ -177,33 +177,33 @@ export default function ArtisanDashboard() {
   const topProducts = products.sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 5);
 
   return (
-    <div className="min-h-screen bg-secondary">
+    <div className="min-h-screen bg-primary">
       <Navigation />
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-16">
         {/* Header with Actions */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
           <div>
-            <h1 className="text-h1 font-bold text-accent mb-2">
-              Artisan Dashboard
+            <h1 className="text-h1 font-bold text-text-primary mb-2">
+              Dashboard
             </h1>
-            <p className="text-text-secondary">Welcome back! Here's your business overview</p>
+            <p className="text-text-secondary">Your business overview</p>
           </div>
           
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-2">
             <button
               onClick={() => loadDashboardData()}
               disabled={refreshing}
-              className="flex items-center space-x-2 bg-background text-text-secondary px-4 py-2 rounded-lg hover:bg-secondary transition border border-border"
+              className="flex items-center space-x-2 bg-secondary text-text-primary px-4 py-2 rounded-lg hover:border-border transition border border-border"
             >
-              <RefreshCw className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} />
-              <span>Refresh</span>
+              <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+              <span className="text-sm">Refresh</span>
             </button>
             
             <select
               value={selectedTimeRange}
               onChange={(e) => setSelectedTimeRange(e.target.value)}
-              className="px-4 py-2 border border-border rounded-lg bg-background focus:ring-2 focus:ring-accent focus:border-transparent"
+              className="px-4 py-2 border border-border rounded-lg bg-primary text-text-primary focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
             >
               <option value="7">Last 7 days</option>
               <option value="30">Last 30 days</option>
@@ -212,23 +212,22 @@ export default function ArtisanDashboard() {
             
             <button
               onClick={() => setShowProductForm(true)}
-              className="flex items-center space-x-2 bg-primary text-white px-4 py-2 rounded-lg hover:bg-accent transition border border-primary hover:border-accent"
+              className="flex items-center space-x-2 bg-text-primary text-primary px-4 py-2 rounded-lg hover:bg-dark transition border border-text-primary"
             >
-              <Plus className="w-5 h-5" />
-              <span>Add Product</span>
+              <Plus className="w-4 h-4" />
+              <span className="text-sm">Add Product</span>
             </button>
           </div>
         </div>
 
         {/* Key Metrics Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <MetricCard
             icon={<DollarSign className="w-6 h-6" />}
             title="Total Revenue"
             value={`$${stats.totalRevenue.toFixed(2)}`}
             change={stats.revenueGrowth}
             trend={stats.revenueGrowth >= 0 ? 'up' : 'down'}
-            gradient="from-green-500 to-emerald-600"
           />
           <MetricCard
             icon={<ShoppingBag className="w-6 h-6" />}
@@ -236,29 +235,26 @@ export default function ArtisanDashboard() {
             value={stats.totalOrders.toString()}
             change={stats.orderGrowth}
             trend={stats.orderGrowth >= 0 ? 'up' : 'down'}
-            gradient="from-blue-500 to-indigo-600"
           />
           <MetricCard
             icon={<Eye className="w-6 h-6" />}
             title="Product Views"
             value={stats.totalViews.toString()}
             subtitle={`${stats.conversionRate.toFixed(1)}% conversion`}
-            gradient="from-purple-500 to-pink-600"
           />
           <MetricCard
             icon={<TrendingUp className="w-6 h-6" />}
             title="Avg Order Value"
             value={`$${stats.avgOrderValue.toFixed(2)}`}
             subtitle={`${stats.totalProducts} products`}
-            gradient="from-orange-500 to-red-600"
           />
         </div>
 
         {/* Alerts & Notifications */}
         {lowStockProducts.length > 0 && (
-          <div className="bg-secondary border-l-4 border-orange-500 border border-orange-200 p-4 mb-8 rounded-lg">
+          <div className="bg-secondary border-l-4 border-accent p-4 mb-8 rounded-lg">
             <div className="flex items-start">
-              <AlertTriangle className="w-6 h-6 text-orange-500 mt-0.5 mr-3" />
+              <AlertTriangle className="w-6 h-6 text-accent mt-0.5 mr-3" />
               <div className="flex-1">
                 <h3 className="font-semibold text-text-primary mb-1">Low Stock Alert</h3>
                 <p className="text-sm text-text-secondary">
@@ -266,7 +262,7 @@ export default function ArtisanDashboard() {
                 </p>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {lowStockProducts.map(p => (
-                    <span key={p.id} className="bg-background px-3 py-1 rounded-full text-sm text-orange-700 border border-orange-200">
+                    <span key={p.id} className="bg-primary px-3 py-1 rounded-full text-sm text-accent border border-border">
                       {p.name}: {p.stock_quantity} left
                     </span>
                   ))}
@@ -277,12 +273,12 @@ export default function ArtisanDashboard() {
         )}
 
         {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
           {/* Revenue Chart */}
-          <div className="lg:col-span-2 bg-background rounded-xl border border-gray-200 p-6">
+          <div className="lg:col-span-2 bg-primary rounded-lg border border-border p-6">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-h3 font-bold text-text-primary">Revenue Trends</h2>
-              <button className="text-accent hover:text-accent text-sm font-semibold flex items-center space-x-1">
+              <button className="text-accent hover:opacity-80 text-sm font-medium flex items-center space-x-1">
                 <Download className="w-4 h-4" />
                 <span>Export</span>
               </button>
@@ -303,9 +299,9 @@ export default function ArtisanDashboard() {
                         ${parseFloat(item.revenue?.toString() || '0').toFixed(2)}
                       </span>
                     </div>
-                    <div className="w-full bg-secondary rounded-full h-3 overflow-hidden">
+                    <div className="w-full bg-secondary rounded-full h-2 overflow-hidden">
                       <div
-                        className="h-full bg-primary rounded-full transition-all duration-500"
+                        className="h-full bg-accent rounded-full transition-all duration-500"
                         style={{ width: `${width}%` }}
                       />
                     </div>
@@ -316,25 +312,25 @@ export default function ArtisanDashboard() {
           </div>
 
           {/* Recent Activity Feed */}
-          <div className="bg-background rounded-xl border border-gray-200 p-6">
+          <div className="bg-primary rounded-lg border border-border p-6">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-h3 font-bold text-text-primary">Recent Activity</h2>
               <Bell className="w-5 h-5 text-text-tertiary" />
             </div>
             
-            <div className="space-y-4 max-h-96 overflow-y-auto">
+            <div className="space-y-3 max-h-96 overflow-y-auto">
               {recentActivities.length === 0 ? (
                 <div className="text-center py-8 text-text-tertiary">
-                  <Activity className="w-12 h-12 mx-auto mb-2 text-text-tertiary" />
-                  <p className="text-sm">No recent activity</p>
+                  <Activity className="w-12 h-12 mx-auto mb-2 text-text-tertiary opacity-50" />
+                  <p className="text-sm">No activity</p>
                 </div>
               ) : (
                 recentActivities.map((activity) => (
-                  <div key={activity.id} className="flex items-start space-x-3 p-3 rounded-lg hover:bg-secondary transition">
-                    <activity.icon className={`w-5 h-5 mt-0.5 ${activity.color}`} />
+                  <div key={activity.id} className="flex items-start space-x-3 p-2 rounded hover:bg-secondary transition">
+                    <activity.icon className="w-4 h-4 mt-1 text-accent flex-shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-text-primary">{activity.message}</p>
-                      <p className="text-xs text-text-tertiary mt-1">
+                      <p className="text-xs text-text-tertiary mt-0.5">
                         {formatTimeAgo(activity.timestamp)}
                       </p>
                     </div>
@@ -348,73 +344,72 @@ export default function ArtisanDashboard() {
         {/* AI-Powered Features Section */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-h2 font-bold text-accent">AI-Powered Business Tools</h2>
+            <h2 className="text-h2 font-bold text-text-primary">AI Business Tools</h2>
             <div className="flex items-center space-x-2 text-sm text-text-secondary">
               <Sparkles className="w-4 h-4 text-accent" />
-              <span>Powered by Gemini AI</span>
             </div>
           </div>
           
           {/* AI Tools Navigation */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mb-6">
             <button
               onClick={() => setShowAITab(showAITab === 'inventory' ? null : 'inventory')}
-              className={`p-4 rounded-lg border-2 transition-all ${
+              className={`p-3 rounded border transition-all ${
                 showAITab === 'inventory'
                   ? 'bg-secondary border-accent'
-                  : 'bg-background border-border hover:border-accent'
+                  : 'bg-primary border-border hover:border-accent'
               }`}
             >
-              <Package className="w-6 h-6 text-accent mx-auto mb-2" />
-              <p className="text-xs font-semibold text-text-primary">Inventory AI</p>
+              <Package className="w-5 h-5 text-accent mx-auto mb-1" />
+              <p className="text-xs font-medium text-text-primary">Inventory</p>
             </button>
             
             <button
               onClick={() => setShowAITab(showAITab === 'market' ? null : 'market')}
-              className={`p-4 rounded-lg border-2 transition-all ${
+              className={`p-3 rounded border transition-all ${
                 showAITab === 'market'
                   ? 'bg-secondary border-accent'
-                  : 'bg-background border-border hover:border-accent'
+                  : 'bg-primary border-border hover:border-accent'
               }`}
             >
-              <BarChart3 className="w-6 h-6 text-accent mx-auto mb-2" />
-              <p className="text-xs font-semibold text-text-primary">Market AI</p>
+              <BarChart3 className="w-5 h-5 text-accent mx-auto mb-1" />
+              <p className="text-xs font-medium text-text-primary">Market</p>
             </button>
             
             <button
               onClick={() => setShowAITab(showAITab === 'customers' ? null : 'customers')}
-              className={`p-4 rounded-lg border-2 transition-all ${
+              className={`p-3 rounded border transition-all ${
                 showAITab === 'customers'
                   ? 'bg-secondary border-accent'
-                  : 'bg-background border-border hover:border-accent'
+                  : 'bg-primary border-border hover:border-accent'
               }`}
             >
-              <Users className="w-6 h-6 text-accent mx-auto mb-2" />
-              <p className="text-xs font-semibold text-text-primary">Customer AI</p>
+              <Users className="w-5 h-5 text-accent mx-auto mb-1" />
+              <p className="text-xs font-medium text-text-primary">Customers</p>
             </button>
             
             <button
               onClick={() => setShowAITab(showAITab === 'business' ? null : 'business')}
-              className={`p-4 rounded-lg border-2 transition-all ${
+              className={`p-3 rounded border transition-all ${
                 showAITab === 'business'
                   ? 'bg-secondary border-accent'
-                  : 'bg-background border-border hover:border-accent'
+                  : 'bg-primary border-border hover:border-accent'
               }`}
             >
-              <TrendingUp className="w-6 h-6 text-accent mx-auto mb-2" />
-              <p className="text-xs font-semibold text-text-primary">Business AI</p>
+              <TrendingUp className="w-5 h-5 text-accent mx-auto mb-1" />
+              <p className="text-xs font-medium text-text-primary">Business</p>
             </button>
             
             <button
               onClick={() => setShowAITab(showAITab === 'description' ? null : 'description')}
-              className={`p-4 rounded-lg border-2 transition-all ${
+              className={`p-3 rounded border transition-all ${
                 showAITab === 'description'
                   ? 'bg-secondary border-accent'
-                  : 'bg-background border-border hover:border-accent'
+                  : 'bg-primary border-border hover:border-accent'
               }`}
             >
-              <Sparkles className="w-6 h-6 text-accent mx-auto mb-2" />
-              <p className="text-xs font-semibold text-text-primary">Description AI</p>
+              <Sparkles className="w-5 h-5 text-accent mx-auto mb-1" />
+              <p className="text-xs font-medium text-text-primary">Content</p>
             </button>
           </div>
           
@@ -445,43 +440,43 @@ export default function ArtisanDashboard() {
           {showAITab === 'description' && <AIProductDescriptionGenerator />}
         </div>
 
-        {/* Top Products & AI Features */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        {/* Top Products & Quick Actions */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           {/* Top Performing Products */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-6">Top Performing Products</h2>
+          <div className="bg-primary rounded-lg border border-border p-6">
+            <h2 className="text-h3 font-bold text-text-primary mb-6">Top Products</h2>
             
             {topProducts.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                <Package className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+              <div className="text-center py-8 text-text-tertiary">
+                <Package className="w-12 h-12 mx-auto mb-2 opacity-50" />
                 <p className="text-sm">No products yet</p>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {topProducts.map((product, index) => (
-                  <div key={product.id} className="flex items-center space-x-4 p-3 rounded-lg hover:bg-gray-50 transition group border border-transparent hover:border-gray-200">
-                    <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                  <div key={product.id} className="flex items-center space-x-3 p-2 rounded hover:bg-secondary transition">
+                    <div className="w-7 h-7 bg-accent rounded-full flex items-center justify-center text-text-primary font-bold text-xs flex-shrink-0">
                       {index + 1}
                     </div>
                     
-                    <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 border border-gray-200">
+                    <div className="w-10 h-10 rounded overflow-hidden bg-secondary border border-border flex-shrink-0">
                       {product.primary_image_url ? (
                         <img src={product.primary_image_url} alt={product.name} className="w-full h-full object-cover" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
-                          <Package className="w-5 h-5 text-gray-400" />
+                          <Package className="w-4 h-4 text-text-tertiary" />
                         </div>
                       )}
                     </div>
                     
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-gray-900 truncate">{product.name}</h3>
-                      <p className="text-sm text-gray-600">{product.views || 0} views</p>
+                      <h3 className="font-medium text-text-primary text-sm truncate">{product.name}</h3>
+                      <p className="text-xs text-text-tertiary">{product.views || 0} views</p>
                     </div>
                     
-                    <div className="text-right">
-                      <p className="font-bold text-gray-900">${product.price.toFixed(2)}</p>
-                      <p className="text-xs text-gray-500">{product.stock_quantity} in stock</p>
+                    <div className="text-right flex-shrink-0">
+                      <p className="font-semibold text-text-primary text-sm">${product.price.toFixed(2)}</p>
+                      <p className="text-xs text-text-tertiary">{product.stock_quantity} stock</p>
                     </div>
                   </div>
                 ))}
@@ -489,114 +484,65 @@ export default function ArtisanDashboard() {
             )}
           </div>
 
-          {/* AI-Powered Quick Actions */}
-          <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-6 border border-indigo-200">
-            <h2 className="text-xl font-bold text-gray-900 mb-6">AI-Powered Tools</h2>
+          {/* Quick Actions */}
+          <div className="bg-primary rounded-lg p-6 border border-border">
+            <h2 className="text-h3 font-bold text-text-primary mb-6">Quick Links</h2>
             
-            <div className="space-y-3">
+            <div className="space-y-2">
               <QuickActionCard
-                icon={<Sparkles className="w-5 h-5" />}
-                title="AI Content Generator"
-                description="Create product descriptions & marketing copy"
+                icon={<Sparkles className="w-4 h-4" />}
+                title="Content Generator"
+                description="Generate descriptions"
                 onClick={() => setShowAIContent(true)}
-                gradient="from-purple-500 to-pink-600"
               />
               
               <QuickActionCard
-                icon={<Brain className="w-5 h-5" />}
-                title="Business Intelligence"
-                description="Get AI insights on market trends"
-                onClick={() => navigate('/dashboard/ai')}
-                gradient="from-indigo-500 to-blue-600"
-              />
-              
-              <QuickActionCard
-                icon={<BarChart3 className="w-5 h-5" />}
-                title="Market Simulation"
-                description="Predict trends & optimize pricing"
+                icon={<BarChart3 className="w-4 h-4" />}
+                title="Market Analysis"
+                description="Analyze trends"
                 onClick={() => navigate('/artisan/market-simulation')}
-                gradient="from-blue-500 to-cyan-600"
               />
               
               <QuickActionCard
-                icon={<Share2 className="w-5 h-5" />}
-                title="Social Distribution"
-                description="Post to multiple platforms instantly"
+                icon={<Share2 className="w-4 h-4" />}
+                title="Social Posts"
+                description="Multi-platform posting"
                 onClick={() => navigate('/artisan/social-distribution')}
-                gradient="from-green-500 to-emerald-600"
               />
               
               <QuickActionCard
-                icon={<Mic className="w-5 h-5" />}
-                title="Voice Business Mentor"
-                description="Get personalized coaching via voice"
+                icon={<Mic className="w-4 h-4" />}
+                title="Voice Mentor"
+                description="Get coaching"
                 onClick={() => navigate('/artisan/voice-mentor')}
-                gradient="from-orange-500 to-red-600"
               />
             </div>
-          </div>
-        </div>
-
-        {/* Advanced Features Grid */}
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Complete Feature Suite</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <FeatureCard
-              icon={<Brain className="w-6 h-6 text-indigo-600" />}
-              title="AI Control Center"
-              description="35+ AI features"
-              onClick={() => navigate('/dashboard/ai')}
-              gradient="from-indigo-50 to-indigo-100"
-            />
-            <FeatureCard
-              icon={<Users className="w-6 h-6 text-violet-600" />}
-              title="Social Commerce"
-              description="Community tools"
-              onClick={() => navigate('/artisan/social-commerce')}
-              gradient="from-violet-50 to-fuchsia-100"
-            />
-            <FeatureCard
-              icon={<Leaf className="w-6 h-6 text-emerald-600" />}
-              title="Sustainability"
-              description="Eco-tracking"
-              onClick={() => navigate('/artisan/sustainability')}
-              gradient="from-emerald-50 to-green-100"
-            />
-            <FeatureCard
-              icon={<Globe className="w-6 h-6 text-blue-600" />}
-              title="Cross-Border"
-              description="Global commerce"
-              onClick={() => navigate('/artisan/cross-border')}
-              gradient="from-blue-50 to-indigo-100"
-            />
           </div>
         </div>
 
         {/* Products Management */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="bg-primary rounded-lg border border-border p-6">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">Product Management</h2>
-            <div className="flex space-x-3">
-              <button className="text-gray-600 hover:text-gray-900 text-sm font-semibold flex items-center space-x-1">
-                <Settings className="w-4 h-4" />
-                <span>Bulk Edit</span>
-              </button>
-            </div>
+            <h2 className="text-h3 font-bold text-text-primary">Products</h2>
+            <button className="text-text-secondary hover:text-text-primary text-sm font-medium flex items-center space-x-1">
+              <Settings className="w-4 h-4" />
+              <span>Edit</span>
+            </button>
           </div>
           
           {products.length === 0 ? (
             <div className="text-center py-12">
-              <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-600 mb-4">No products yet</p>
+              <Package className="w-16 h-16 text-text-tertiary mx-auto mb-4 opacity-50" />
+              <p className="text-text-secondary mb-4">No products yet</p>
               <button
                 onClick={() => setShowProductForm(true)}
-                className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-lg hover:from-indigo-700 hover:to-purple-700 transition border border-indigo-600 hover:border-indigo-700"
+                className="bg-text-primary text-primary px-6 py-2 rounded-lg hover:bg-dark transition border border-text-primary text-sm font-medium"
               >
-                Add Your First Product
+                Add Product
               </button>
             </div>
           ) : (
-            <div className="grid gap-3">
+            <div className="grid gap-2">
               {products.map(product => (
                 <ProductRow key={product.id} product={product} onUpdate={loadDashboardData} />
               ))}
@@ -616,59 +562,46 @@ export default function ArtisanDashboard() {
   );
 }
 
-function MetricCard({ icon, title, value, change, trend, subtitle, gradient }: any) {
+function MetricCard({ icon, title, value, change, trend, subtitle }: any) {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6 hover:border-gray-300 transition-colors">
-      <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${gradient} flex items-center justify-center text-white mb-4`}>
+    <div className="bg-primary rounded-lg border border-border p-5 hover:border-accent transition-colors">
+      <div className="w-10 h-10 rounded bg-accent flex items-center justify-center text-text-primary mb-3">
         {icon}
       </div>
       
-      <h3 className="text-sm font-medium text-gray-600 mb-1">{title}</h3>
-      <p className="text-2xl font-bold text-gray-900 mb-2">{value}</p>
+      <h3 className="text-xs font-medium text-text-secondary mb-1 uppercase">{title}</h3>
+      <p className="text-2xl font-bold text-text-primary mb-2">{value}</p>
       
       {change !== undefined && (
-        <div className={`flex items-center space-x-1 text-sm ${
-          trend === 'up' ? 'text-green-600' : 'text-red-600'
+        <div className={`flex items-center space-x-1 text-xs ${
+          trend === 'up' ? 'text-text-primary' : 'text-text-secondary'
         }`}>
-          {trend === 'up' ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />}
+          {trend === 'up' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />}
           <span className="font-semibold">{Math.abs(change).toFixed(1)}%</span>
-          <span className="text-gray-500">vs last period</span>
+          <span className="text-text-tertiary">vs period</span>
         </div>
       )}
       
       {subtitle && (
-        <p className="text-sm text-gray-500">{subtitle}</p>
+        <p className="text-xs text-text-tertiary mt-1">{subtitle}</p>
       )}
     </div>
   );
 }
 
-function QuickActionCard({ icon, title, description, onClick, gradient }: any) {
+function QuickActionCard({ icon, title, description, onClick }: any) {
   return (
     <button
       onClick={onClick}
-      className="w-full flex items-center space-x-4 p-4 rounded-lg bg-white hover:border-gray-300 transition-all group border border-gray-100"
+      className="w-full flex items-center space-x-3 p-3 rounded border border-border bg-primary hover:bg-secondary transition-all group"
     >
-      <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${gradient} flex items-center justify-center text-white flex-shrink-0 group-hover:scale-110 transition-transform`}>
+      <div className="w-8 h-8 rounded bg-accent flex items-center justify-center text-text-primary flex-shrink-0 group-hover:scale-110 transition-transform">
         {icon}
       </div>
-      <div className="flex-1 text-left">
-        <h3 className="font-semibold text-gray-900 text-sm">{title}</h3>
-        <p className="text-xs text-gray-600">{description}</p>
+      <div className="flex-1 text-left min-w-0">
+        <h3 className="font-medium text-text-primary text-sm">{title}</h3>
+        <p className="text-xs text-text-tertiary">{description}</p>
       </div>
-    </button>
-  );
-}
-
-function FeatureCard({ icon, title, description, onClick, gradient }: any) {
-  return (
-    <button
-      onClick={onClick}
-      className={`bg-gradient-to-br ${gradient} rounded-lg p-5 text-left hover:ring-2 hover:ring-offset-1 transition-all cursor-pointer group border border-transparent`}
-    >
-      <div className="mb-3 group-hover:scale-110 transition-transform">{icon}</div>
-      <h3 className="font-semibold text-gray-900 mb-1 text-sm">{title}</h3>
-      <p className="text-xs text-gray-600">{description}</p>
     </button>
   );
 }
@@ -694,40 +627,40 @@ function ProductRow({ product, onUpdate }: { product: Product; onUpdate: () => v
   }
 
   return (
-    <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-indigo-300 hover:shadow-sm transition group">
-      <div className="flex items-center space-x-4">
-        <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden group-hover:ring-2 group-hover:ring-indigo-300 transition">
+    <div className="flex items-center justify-between p-3 border border-border rounded hover:border-accent hover:bg-secondary transition group">
+      <div className="flex items-center space-x-3 flex-1 min-w-0">
+        <div className="w-12 h-12 bg-secondary rounded overflow-hidden flex-shrink-0 group-hover:ring-2 group-hover:ring-accent transition">
           {product.primary_image_url ? (
             <img src={product.primary_image_url} alt={product.name} className="w-full h-full object-cover" />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-gray-400">
-              <Package className="w-6 h-6" />
+            <div className="w-full h-full flex items-center justify-center text-text-tertiary">
+              <Package className="w-5 h-5" />
             </div>
           )}
         </div>
-        <div>
-          <h3 className="font-semibold text-gray-900">{product.name}</h3>
-          <div className="flex items-center space-x-3 mt-1">
-            <span className="text-sm text-gray-600">${product.price.toFixed(2)}</span>
-            <span className="text-sm text-gray-400">•</span>
-            <span className={`text-sm ${product.stock_quantity < 5 ? 'text-orange-600 font-semibold' : 'text-gray-600'}`}>
-              {product.stock_quantity} in stock
+        <div className="min-w-0 flex-1">
+          <h3 className="font-medium text-text-primary text-sm truncate">{product.name}</h3>
+          <div className="flex items-center space-x-2 mt-0.5">
+            <span className="text-xs text-text-secondary">${product.price.toFixed(2)}</span>
+            <span className="text-xs text-text-tertiary">•</span>
+            <span className={`text-xs ${product.stock_quantity < 5 ? 'text-accent font-medium' : 'text-text-tertiary'}`}>
+              {product.stock_quantity} stock
             </span>
           </div>
         </div>
       </div>
-      <div className="flex items-center space-x-4">
-        <div className="text-sm text-gray-600 flex items-center space-x-1">
-          <Eye className="w-4 h-4" />
+      <div className="flex items-center space-x-3 flex-shrink-0">
+        <div className="text-xs text-text-tertiary flex items-center space-x-0.5">
+          <Eye className="w-3 h-3" />
           <span>{product.views || 0}</span>
         </div>
         <button
           onClick={toggleActive}
           disabled={toggling}
-          className={`px-4 py-2 rounded-lg font-semibold transition ${
+          className={`px-3 py-1 rounded text-xs font-medium transition ${
             product.is_active
-              ? 'bg-green-100 text-green-700 hover:bg-green-200'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              ? 'bg-secondary text-accent border border-accent'
+              : 'bg-secondary text-text-secondary border border-border'
           }`}
         >
           {product.is_active ? 'Active' : 'Inactive'}
@@ -794,40 +727,40 @@ function ProductFormModal({ onClose, onSuccess }: any) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-8 border border-gray-200">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Add New Product</h2>
+      <div className="bg-primary rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto p-8 border border-border">
+        <h2 className="text-2xl font-bold text-text-primary mb-6">Add Product</h2>
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Product Name</label>
+            <label className="block text-sm font-medium text-text-primary mb-2">Name</label>
             <input
               type="text"
               required
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-600 focus:border-transparent"
+              className="w-full px-4 py-2 border border-border rounded-lg bg-secondary focus:ring-2 focus:ring-accent focus:border-transparent text-text-primary"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+            <label className="block text-sm font-medium text-text-primary mb-2">Description</label>
             <textarea
               required
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               rows={4}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-600 focus:border-transparent"
+              className="w-full px-4 py-2 border border-border rounded-lg bg-secondary focus:ring-2 focus:ring-accent focus:border-transparent text-text-primary"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+              <label className="block text-sm font-medium text-text-primary mb-2">Category</label>
               <select
                 required
                 value={formData.category}
                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-600 focus:border-transparent"
+                className="w-full px-4 py-2 border border-border rounded-lg bg-secondary focus:ring-2 focus:ring-accent focus:border-transparent text-text-primary"
               >
                 <option value="">Select category</option>
                 <option value="Textiles">Textiles</option>
@@ -840,37 +773,37 @@ function ProductFormModal({ onClose, onSuccess }: any) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Price (USD)</label>
+              <label className="block text-sm font-medium text-text-primary mb-2">Price (USD)</label>
               <input
                 type="number"
                 step="0.01"
                 required
                 value={formData.price}
                 onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-600 focus:border-transparent"
+                className="w-full px-4 py-2 border border-border rounded-lg bg-secondary focus:ring-2 focus:ring-accent focus:border-transparent text-text-primary"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Stock Quantity</label>
+              <label className="block text-sm font-medium text-text-primary mb-2">Stock Quantity</label>
               <input
                 type="number"
                 required
                 value={formData.stock_quantity}
                 onChange={(e) => setFormData({ ...formData, stock_quantity: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-600 focus:border-transparent"
+                className="w-full px-4 py-2 border border-border rounded-lg bg-secondary focus:ring-2 focus:ring-accent focus:border-transparent text-text-primary"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Product Image</label>
+            <label className="block text-sm font-medium text-text-primary mb-2">Image</label>
             <input
               type="file"
               accept="image/*"
               required
               onChange={(e) => setImageFile(e.target.files?.[0] || null)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-600 focus:border-transparent"
+              className="w-full px-4 py-2 border border-border rounded-lg bg-secondary focus:ring-2 focus:ring-accent focus:border-transparent text-text-primary"
             />
           </div>
 
@@ -878,14 +811,14 @@ function ProductFormModal({ onClose, onSuccess }: any) {
             <button
               type="submit"
               disabled={uploading}
-              className="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-indigo-700 hover:to-purple-700 transition disabled:opacity-50"
+              className="flex-1 bg-text-primary text-primary px-6 py-2 rounded-lg font-medium hover:bg-dark transition disabled:opacity-50 border border-text-primary"
             >
               {uploading ? 'Uploading...' : 'Add Product'}
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="px-6 py-3 rounded-lg font-semibold border border-gray-300 hover:bg-gray-50 transition"
+              className="px-6 py-2 rounded-lg font-medium border border-border text-text-primary hover:bg-secondary transition"
             >
               Cancel
             </button>
@@ -924,16 +857,16 @@ function AIContentModal({ onClose }: any) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-8 border border-gray-200">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">AI Content Generator</h2>
+      <div className="bg-primary rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto p-8 border border-border">
+        <h2 className="text-2xl font-bold text-text-primary mb-6">AI Content Generator</h2>
         
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Content Type</label>
+            <label className="block text-sm font-medium text-text-primary mb-2">Content Type</label>
             <select
               value={contentType}
               onChange={(e) => setContentType(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-600 focus:border-transparent"
+              className="w-full px-4 py-2 border border-border rounded-lg bg-secondary focus:ring-2 focus:ring-accent focus:border-transparent text-text-primary"
             >
               <option value="product_description">Product Description</option>
               <option value="social_post">Social Media Post</option>
@@ -944,52 +877,52 @@ function AIContentModal({ onClose }: any) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Product Name</label>
+            <label className="block text-sm font-medium text-text-primary mb-2">Product Name</label>
             <input
               type="text"
               value={input.productName}
               onChange={(e) => setInput({ ...input, productName: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-600 focus:border-transparent"
+              className="w-full px-4 py-2 border border-border rounded-lg bg-secondary focus:ring-2 focus:ring-accent focus:border-transparent text-text-primary"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+            <label className="block text-sm font-medium text-text-primary mb-2">Category</label>
             <input
               type="text"
               value={input.category}
               onChange={(e) => setInput({ ...input, category: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-600 focus:border-transparent"
+              className="w-full px-4 py-2 border border-border rounded-lg bg-secondary focus:ring-2 focus:ring-accent focus:border-transparent text-text-primary"
             />
           </div>
 
           <button
             onClick={generateContent}
             disabled={generating}
-            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition disabled:opacity-50 flex items-center justify-center space-x-2"
+            className="w-full bg-accent text-text-primary px-6 py-2 rounded-lg font-medium hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center space-x-2 border border-accent"
           >
             <Sparkles className="w-5 h-5" />
-            <span>{generating ? 'Generating...' : 'Generate with AI'}</span>
+            <span>{generating ? 'Generating...' : 'Generate'}</span>
           </button>
 
           {generatedContent && (
-            <div className="mt-6 p-4 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-lg border border-indigo-100">
-              <h3 className="font-semibold text-gray-900 mb-3">Generated Content</h3>
-              <div className="bg-white p-4 rounded-lg whitespace-pre-wrap text-gray-700">
+            <div className="mt-6 p-4 bg-secondary rounded-lg border border-border">
+              <h3 className="font-medium text-text-primary mb-3 text-sm">Generated Content</h3>
+              <div className="bg-primary p-3 rounded text-text-primary text-sm whitespace-pre-wrap border border-border">
                 {generatedContent}
               </div>
               <button
                 onClick={() => navigator.clipboard.writeText(generatedContent)}
-                className="mt-3 text-indigo-600 hover:text-indigo-700 font-semibold text-sm"
+                className="mt-3 text-accent hover:opacity-80 font-medium text-xs"
               >
-                📋 Copy to Clipboard
+                Copy to Clipboard
               </button>
             </div>
           )}
 
           <button
             onClick={onClose}
-            className="w-full px-6 py-3 rounded-lg font-semibold border border-gray-300 hover:bg-gray-50 transition"
+            className="w-full px-6 py-2 rounded-lg font-medium border border-border text-text-primary hover:bg-secondary transition"
           >
             Close
           </button>
