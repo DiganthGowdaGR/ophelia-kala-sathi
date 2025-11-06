@@ -1,4 +1,3 @@
-/* @ts-nocheck */
 import React, { useState, useCallback, useEffect } from 'react';
 import { GoogleMap, Marker, DirectionsRenderer, useJsApiLoader } from '@react-google-maps/api';
 import { MapPin, Navigation, Clock, Package, TrendingUp, AlertCircle, Trash2 } from 'lucide-react';
@@ -67,7 +66,6 @@ export default function DeliveryRouteOptimizer() {
       setLoading(true);
       setOptimizationError(null);
 
-      // Mock data - in production, this would come from your database
       const mockWaypoints: Waypoint[] = [
         {
           id: '1',
@@ -145,11 +143,8 @@ export default function DeliveryRouteOptimizer() {
     setIsOptimizing(true);
     setOptimizationError(null);
 
-    // Simulate route optimization
     setTimeout(() => {
       try {
-        // In a real implementation, this would use a route optimization algorithm
-        // For now, we'll just use Google's built-in optimization
         calculateRoute();
         setIsOptimizing(false);
       } catch (error) {
