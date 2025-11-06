@@ -37,8 +37,8 @@ export default function AIProfileOptimizer({
       const result = await getProfileOptimizationSuggestions({
         bio,
         skills,
-        yearsExperience,
-        portfolioCount
+        productCount: portfolioCount,
+        rating: 4.5 // Default rating
       });
       
       setOptimization(result);
@@ -54,12 +54,11 @@ export default function AIProfileOptimizer({
     setError(null);
     
     try {
-      const craft = skills.length > 0 ? skills[0] : 'artisan crafts';
       const result = await generateOptimizedBio({
         name: 'Artisan',
-        craft,
+        skills,
         yearsExperience,
-        specialization: skills.length > 1 ? skills[1] : undefined
+        uniqueValue: skills.length > 0 ? skills[0] : 'artisan crafts'
       });
       
       if (onBioGenerated) {

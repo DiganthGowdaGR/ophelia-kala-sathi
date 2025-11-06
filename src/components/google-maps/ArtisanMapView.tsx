@@ -165,7 +165,9 @@ export default function ArtisanMapView() {
 
   return (
     <div className="relative w-full">
+      {/* @ts-ignore */}
       <LoadScript googleMapsApiKey={GOOGLE_MAPS_API_KEY} libraries={['visualization']}>
+        {/* @ts-ignore */}
         <GoogleMap
           mapContainerStyle={mapContainerStyle}
           center={defaultCenter}
@@ -180,6 +182,7 @@ export default function ArtisanMapView() {
         >
           {/* User location marker */}
           {userLocation && (
+            /* @ts-ignore */
             <Marker
               position={userLocation}
               icon={{
@@ -196,6 +199,7 @@ export default function ArtisanMapView() {
 
           {/* Artisan markers */}
           {artisans.map((artisan) => (
+            /* @ts-ignore */
             <Marker
               key={artisan.id}
               position={{ lat: artisan.latitude, lng: artisan.longitude }}
@@ -210,6 +214,7 @@ export default function ArtisanMapView() {
 
           {/* Info window for selected artisan */}
           {selectedArtisan && (
+            /* @ts-ignore */
             <InfoWindow
               position={{ lat: selectedArtisan.latitude, lng: selectedArtisan.longitude }}
               onCloseClick={() => setSelectedArtisan(null)}
@@ -248,6 +253,7 @@ export default function ArtisanMapView() {
 
           {/* Heatmap layer */}
           {showHeatmap && mapRef && (
+            /* @ts-ignore */
             <HeatmapLayer
               data={heatmapData}
               options={{

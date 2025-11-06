@@ -28,10 +28,10 @@ export default function AIMarketAnalyzer({
     
     try {
       const result = await analyzeMarketTrends({
-        category,
-        recentSales,
-        competitorCount,
-        priceRange: { min: 25, max: 150 }
+        productCategory: category,
+        pricePoint: recentSales > 0 ? recentSales / 10 : 50, // Estimate price point
+        seasonality: 'Spring',
+        competitorCount
       });
       
       setAnalysis(result);

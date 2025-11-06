@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
@@ -11,10 +11,6 @@ export default function CartPage() {
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    loadCart();
-  }, [loadCart]);
 
   const loadCart = useCallback(async () => {
     try {
@@ -34,6 +30,10 @@ export default function CartPage() {
       setLoading(false);
     }
   }, [user?.id]);
+
+  useEffect(() => {
+    loadCart();
+  }, [loadCart]);
 
   async function updateQuantity(itemId: string, newQuantity: number) {
     if (newQuantity < 1) return;

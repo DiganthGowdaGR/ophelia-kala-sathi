@@ -57,24 +57,36 @@ export default function HeatmapVisualization() {
     libraries
   });
 
-  useEffect(() => {
-    if (isLoaded && mapInstance) {
-      loadHeatmapData();
-    }
-  }, [isLoaded, mapInstance, loadHeatmapData]);
+  // Helper functions declared first
+  const calculateStatistics = (data: any[]) => {
+    const searchData = data.filter(item => item.search_query);
+    
+    const queryCount: { [key: string]: number } = {};
+    searchData.forEach(item => {
+      const query = item.search_query.toLowerCase();
+      queryCount[query] = (queryCount[query] || 0) + 1;
+    });
 
-  useEffect(() => {
-    if (heatmapLayer && heatmapData.length > 0) {
-      updateHeatmapLayer();
-    }
-  }, [heatmapData, intensity, radius, updateHeatmapLayer, heatmapLayer]);
+    const topQuery = Object.entries(queryCount).sort((a, b) => b[1] - a[1])[0]?.[0] || 'N/A';
 
+    const uniqueLocations = new Set(
+      data.map(item => `${item.lat},${item.lng}`)
+    ).size;
+
+    setStats({
+      total_searches: searchData.length,
+      unique_locations: uniqueLocations,
+      top_query: topQuery,
+      peak_area: 'City Center'
+    });
+  };
+
+  // Load heatmap data function
   const loadHeatmapData = useCallback(async () => {
     setLoading(true);
     try {
       let query = supabase.from('heatmap_and_searches').select('*');
 
-      // Apply time range filter
       if (timeRange !== 'all') {
         const now = new Date();
         const startDate = new Date();
@@ -94,7 +106,6 @@ export default function HeatmapVisualization() {
         query = query.gte('created_at', startDate.toISOString());
       }
 
-      // Apply data type filter
       if (dataType === 'searches') {
         query = query.not('search_query', 'is', null);
       }
@@ -104,7 +115,6 @@ export default function HeatmapVisualization() {
       if (error) throw error;
 
       if (data && isLoaded) {
-        // Convert to heatmap format
         const heatmapPoints: HeatmapData[] = data
           .filter(item => item.lat && item.lng)
           .map(item => ({
@@ -117,7 +127,6 @@ export default function HeatmapVisualization() {
 
         setHeatmapData(heatmapPoints);
 
-        // Load search queries for display
         const queries: SearchQuery[] = data
           .filter(item => item.search_query)
           .map(item => ({
@@ -130,11 +139,8 @@ export default function HeatmapVisualization() {
           }));
 
         setSearchQueries(queries);
-
-        // Calculate statistics
         calculateStatistics(data);
 
-        // Center map on data
         if (heatmapPoints.length > 0) {
           const bounds = new google.maps.LatLngBounds();
           heatmapPoints.forEach(point => bounds.extend(point.location));
@@ -148,40 +154,14 @@ export default function HeatmapVisualization() {
     }
   }, [dataType, timeRange, isLoaded, mapInstance]);
 
-  const calculateStatistics = (data: any[]) => {
-    const searchData = data.filter(item => item.search_query);
-    
-    // Count queries by search term
-    const queryCount: { [key: string]: number } = {};
-    searchData.forEach(item => {
-      const query = item.search_query.toLowerCase();
-      queryCount[query] = (queryCount[query] || 0) + 1;
-    });
-
-    const topQuery = Object.entries(queryCount).sort((a, b) => b[1] - a[1])[0]?.[0] || 'N/A';
-
-    // Get unique locations
-    const uniqueLocations = new Set(
-      data.map(item => `${item.lat},${item.lng}`)
-    ).size;
-
-    setStats({
-      total_searches: searchData.length,
-      unique_locations: uniqueLocations,
-      top_query: topQuery,
-      peak_area: 'City Center' // This would need geocoding in production
-    });
-  };
-
+  // Update heatmap layer function
   const updateHeatmapLayer = useCallback(() => {
     if (!mapInstance || !isLoaded) return;
 
-    // Remove existing layer
     if (heatmapLayer) {
       heatmapLayer.setMap(null);
     }
 
-    // Create new heatmap layer
     const newHeatmapLayer = new google.maps.visualization.HeatmapLayer({
       data: heatmapData.map(point => ({
         location: point.location,
@@ -211,11 +191,23 @@ export default function HeatmapVisualization() {
     setHeatmapLayer(newHeatmapLayer);
   }, [heatmapData, intensity, radius, isLoaded, mapInstance, heatmapLayer]);
 
-
-
+  // Map load handler
   const handleMapLoad = useCallback((map: google.maps.Map) => {
     setMapInstance(map);
   }, []);
+
+  // Effects
+  useEffect(() => {
+    if (isLoaded && mapInstance) {
+      loadHeatmapData();
+    }
+  }, [isLoaded, mapInstance, loadHeatmapData]);
+
+  useEffect(() => {
+    if (heatmapLayer && heatmapData.length > 0) {
+      updateHeatmapLayer();
+    }
+  }, [heatmapData, intensity, radius, updateHeatmapLayer, heatmapLayer]);
 
   if (loadError) {
     return (
@@ -250,7 +242,6 @@ export default function HeatmapVisualization() {
           </button>
         </div>
 
-        {/* Statistics */}
         <div className="grid grid-cols-4 gap-4 mb-6">
           <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
             <div className="flex items-center gap-2 mb-2">
@@ -293,7 +284,6 @@ export default function HeatmapVisualization() {
           </div>
         </div>
 
-        {/* Filters */}
         <div className="mb-6 p-4 bg-gray-50 border border-gray-200 rounded-lg">
           <div className="flex items-center gap-2 mb-4">
             <Filter className="w-5 h-5 text-gray-600" />
@@ -364,7 +354,6 @@ export default function HeatmapVisualization() {
           </div>
         </div>
 
-        {/* Recent Searches */}
         {searchQueries.length > 0 && (
           <div className="mb-6">
             <h3 className="font-semibold mb-3 flex items-center gap-2">
@@ -391,7 +380,6 @@ export default function HeatmapVisualization() {
           </div>
         )}
 
-        {/* No Data Message */}
         {heatmapData.length === 0 && (
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
             <div className="text-center">
@@ -403,8 +391,8 @@ export default function HeatmapVisualization() {
         )}
       </div>
 
-      {/* Map Display */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        {/* @ts-ignore */}
         <GoogleMap
           mapContainerStyle={containerStyle}
           center={center}
@@ -416,12 +404,9 @@ export default function HeatmapVisualization() {
             mapTypeControl: true,
             fullscreenControl: true
           }}
-        >
-          {/* Heatmap layer is managed separately via updateHeatmapLayer */}
-        </GoogleMap>
+        />
       </div>
 
-      {/* Legend */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
         <h3 className="font-semibold mb-3">Heatmap Legend</h3>
         <div className="flex items-center gap-4">

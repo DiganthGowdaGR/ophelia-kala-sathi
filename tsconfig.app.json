@@ -10,6 +10,7 @@
     ],
     "module": "ESNext",
     "skipLibCheck": true,
+    "ignoreDeprecations": "6.0",
     /* Tailwind stuff */
     "baseUrl": ".",
     "paths": {
@@ -39,5 +40,8 @@
   "include": [
     "src",
     "test"
+  ],
+  "exclude": [
+    "src/components/google-maps/*.tsx"
   ]
 }

@@ -41,34 +41,35 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-secondary">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100">
       <Navigation />
       
       <div className="flex items-center justify-center py-20 px-4">
-        <div className="max-w-md w-full bg-background rounded-xl shadow-xl p-8 border border-border">
+        <div className="max-w-md w-full bg-white rounded-2xl shadow-2xl p-8 border border-purple-100">
           <div className="text-center mb-8">
-            <h1 className="text-h2 font-bold text-text-primary mb-2">Welcome Back</h1>
-            <p className="text-text-secondary">Sign in to your Ophelia AI account</p>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent mb-2">Welcome Back</h1>
+            <p className="text-gray-600">Sign in to your Ophelia AI account</p>
           </div>
 
           {error && (
-            <div className="bg-destructive/10 text-destructive p-3 rounded-lg mb-6 text-sm">
+            <div className="bg-red-50 text-red-700 p-4 rounded-lg mb-6 text-sm border border-red-200">
+              <p className="font-semibold">Error</p>
               {error}
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-body-sm font-medium text-text-secondary mb-2">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Email
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-text-tertiary" />
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-600 focus:border-transparent transition"
                   placeholder="you@example.com"
                   required
                 />
@@ -76,16 +77,21 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label className="block text-body-sm font-medium text-text-secondary mb-2">
-                Password
-              </label>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-sm font-semibold text-gray-700">
+                  Password
+                </label>
+                <Link to="#" className="text-sm text-purple-600 hover:text-indigo-600 font-medium transition">
+                  Forgot?
+                </Link>
+              </div>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-text-tertiary" />
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-600 focus:border-transparent transition"
                   placeholder="Enter your password"
                   required
                 />
@@ -95,7 +101,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading || googleLoading}
-              className="w-full bg-primary text-white py-3 rounded-lg font-semibold hover:bg-accent transition disabled:opacity-50 uppercase tracking-button"
+              className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 rounded-xl font-semibold hover:from-purple-700 hover:to-indigo-700 transition disabled:opacity-50 shadow-lg"
             >
               {loading ? 'Signing in...' : 'Sign In'}
             </button>
@@ -104,10 +110,10 @@ export default function LoginPage() {
           <div className="mt-6">
             <div className="relative mb-6">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-border"></div>
+                <div className="w-full border-t border-gray-300"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-background text-text-secondary">Or continue with</span>
+                <span className="px-2 bg-white text-gray-600">Or continue with</span>
               </div>
             </div>
 
@@ -115,7 +121,7 @@ export default function LoginPage() {
               type="button"
               disabled={loading || googleLoading}
               onClick={handleGoogleSignIn}
-              className="w-full flex items-center justify-center space-x-2 border border-border text-text-primary py-3 rounded-lg font-semibold hover:bg-secondary transition disabled:opacity-50"
+              className="w-full flex items-center justify-center space-x-2 border-2 border-gray-300 text-gray-700 py-3 rounded-xl font-semibold hover:border-purple-600 hover:text-purple-600 transition disabled:opacity-50"
             >
               <Chrome className="w-5 h-5" />
               <span>{googleLoading ? 'Signing in...' : 'Sign in with Google'}</span>
@@ -123,9 +129,9 @@ export default function LoginPage() {
           </div>
 
           <div className="mt-6 text-center">
-            <p className="text-text-secondary">
+            <p className="text-gray-600">
               Don't have an account?{' '}
-              <Link to="/signup" className="text-accent font-semibold hover:text-accent">
+              <Link to="/signup" className="font-semibold text-purple-600 hover:text-indigo-600 transition">
                 Sign up
               </Link>
             </p>

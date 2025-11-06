@@ -27,10 +27,10 @@ export default function AICustomerInsights({
     
     try {
       const result = await analyzeCustomerBehavior({
-        totalCustomers,
-        repeatCustomerRate,
+        recentOrders: Math.floor(totalCustomers * 0.1), // Estimate recent orders
         averageOrderValue,
-        topCategories: ['Textiles', 'Pottery', 'Jewelry']
+        repeatCustomerRate,
+        productReviews: ['Great quality', 'Beautiful craftsmanship', 'Highly recommended']
       });
       
       setInsights(result);

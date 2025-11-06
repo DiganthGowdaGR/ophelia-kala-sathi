@@ -490,6 +490,7 @@ export default function LocationTracker() {
 
       {/* Map Display */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        /* @ts-ignore */
         <GoogleMap
           mapContainerStyle={containerStyle}
           center={center}

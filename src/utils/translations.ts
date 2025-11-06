@@ -1,6 +1,6 @@
 type Language = 'en' | 'hi' | 'bn' | 'te' | 'mr' | 'ta' | 'ur' | 'gu' | 'kn' | 'or' | 'ml' | 'pa' | 'as' | 'ma';
 
-const translations: Record<Language, any> = {};
+const translations: Partial<Record<Language, Record<string, any>>> = {};
 
 const modules = import.meta.glob('@/locales/*.json', { eager: true });
 
@@ -8,7 +8,7 @@ for (const [path, module] of Object.entries(modules)) {
   const match = path.match(/\/([a-z]+)\.json$/);
   if (match) {
     const lang = match[1] as Language;
-    translations[lang] = (module as any).default;
+    translations[lang] = (module as any).default || {};
   }
 }
 
